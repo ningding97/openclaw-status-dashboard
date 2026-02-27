@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OpenClaw Status Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════
+   RESET & CUSTOM PROPERTIES
+   ═══════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #0e0e16;
+  --bg-card: #12121a;
+  --bg-card-hover: #1a1a25;
+  --bg-card-active: #1e1e2a;
+  --border: #2a2a3a;
+  --border-subtle: #1e1e2e;
+  --text-primary: #e8e6f0;
+  --text-secondary: #8888a0;
+  --text-tertiary: #5a5a72;
+  --accent-green: #00d68f;
+  --accent-amber: #ffaa00;
+  --accent-blue: #4d9fff;
+  --accent-red: #ff4d6a;
+  --accent-purple: #a855f7;
+  --glow-green: rgba(0, 214, 143, 0.15);
+  --glow-amber: rgba(255, 170, 0, 0.15);
+  --glow-blue: rgba(77, 159, 255, 0.15);
+  --glow-red: rgba(255, 77, 106, 0.15);
+  --glow-purple: rgba(168, 85, 247, 0.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.2);
+  --shadow-card-hover: 0 4px 16px rgba(0,0,0,0.4), 0 8px 32px rgba(0,0,0,0.3);
+  --transition: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html { font-size: 15px; }
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Subtle noise/grid bg */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(77, 159, 255, 0.06), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(168, 85, 247, 0.04), transparent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════
+   LAYOUT
+   ═══════════════════════════════════════════════════ */
+.dashboard {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+/* ═══════════════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════════════ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 32px;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+}
+.logo span { color: var(--accent-blue); }
+.header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 214, 143, 0.1);
+  border: 1px solid rgba(0, 214, 143, 0.2);
+  color: var(--accent-green);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-family: var(--font-mono);
+}
+.header-badge .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  animation: liveDot 2s ease-in-out infinite;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header-meta {
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+.header-meta .uptime { color: var(--text-tertiary); font-size: 0.72rem; }
+
+@keyframes liveDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ═══════════════════════════════════════════════════
+   STATUS PULSE (Hero Section)
+   ═══════════════════════════════════════════════════ */
+.status-pulse-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 0 40px;
+  position: relative;
+}
+
+.pulse-container {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+/* The core orb */
+.pulse-orb {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #3ae8b0, #00d68f 50%, #00a66e);
+  box-shadow:
+    0 0 30px rgba(0, 214, 143, 0.4),
+    0 0 60px rgba(0, 214, 143, 0.2),
+    0 0 100px rgba(0, 214, 143, 0.1),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.3);
+  animation: orbBreathe 3s ease-in-out infinite;
+  position: relative;
+  z-index: 2;
+  cursor: pointer;
+  transition: all 0.5s ease;
+}
+.pulse-orb.thinking {
+  background: radial-gradient(circle at 35% 35%, #ffc94d, #ffaa00 50%, #cc8800);
+  box-shadow:
+    0 0 30px rgba(255, 170, 0, 0.4),
+    0 0 60px rgba(255, 170, 0, 0.2),
+    0 0 100px rgba(255, 170, 0, 0.1),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.3);
+}
+.pulse-orb.streaming {
+  background: radial-gradient(circle at 35% 35%, #7ab8ff, #4d9fff 50%, #2d7fe0);
+  box-shadow:
+    0 0 30px rgba(77, 159, 255, 0.4),
+    0 0 60px rgba(77, 159, 255, 0.2),
+    0 0 100px rgba(77, 159, 255, 0.1),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes orbBreathe {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.08); filter: brightness(1.15); }
+}
+
+/* Pulse rings */
+.pulse-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 214, 143, 0.25);
+  animation: pulseRing 3s ease-out infinite;
+  z-index: 1;
+}
+.pulse-ring:nth-child(2) { animation-delay: 1s; }
+.pulse-ring:nth-child(3) { animation-delay: 2s; }
+.pulse-orb.thinking ~ .pulse-ring { border-color: rgba(255, 170, 0, 0.25); }
+.pulse-orb.streaming ~ .pulse-ring { border-color: rgba(77, 159, 255, 0.25); }
+
+@keyframes pulseRing {
+  0% { transform: scale(0.5); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Orbiting sub-agent dots */
+.orbit-track {
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  animation: orbitSpin 8s linear infinite;
+  z-index: 3;
+}
+.orbit-track:nth-child(6) { animation-duration: 12s; animation-direction: reverse; inset: -25px; }
+
+.orbit-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.orbit-dot.running {
+  background: var(--accent-blue);
+  box-shadow: 0 0 8px rgba(77, 159, 255, 0.6);
+}
+.orbit-dot.completed {
+  background: var(--accent-green);
+  box-shadow: 0 0 8px rgba(0, 214, 143, 0.4);
+  opacity: 0.6;
+}
+
+@keyframes orbitSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Status text */
+.pulse-status {
+  text-align: center;
+}
+.pulse-status-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+.pulse-status-value {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.pulse-status-value.thinking-text { color: var(--accent-amber); }
+.pulse-status-value.idle-text { color: var(--accent-green); }
+.pulse-status-value.streaming-text { color: var(--accent-blue); }
+
+.pulse-model {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  background: rgba(255,255,255,0.04);
+  padding: 3px 10px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* ═══════════════════════════════════════════════════
+   GRID
+   ═══════════════════════════════════════════════════ */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* ═══════════════════════════════════════════════════
+   CARDS
+   ═══════════════════════════════════════════════════ */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: all var(--transition);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+  /* Fade-up entrance animation */
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeUp 0.6s ease forwards;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+}
+.card:hover {
+  border-color: var(--border);
+  background: var(--bg-card-hover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+.card.clickable { cursor: pointer; }
+.card.clickable:active {
+  transform: translateY(0);
+  background: var(--bg-card-active);
+}
+
+/* Stagger */
+.card:nth-child(1) { animation-delay: 0ms; }
+.card:nth-child(2) { animation-delay: 60ms; }
+.card:nth-child(3) { animation-delay: 120ms; }
+.card:nth-child(4) { animation-delay: 180ms; }
+.card:nth-child(5) { animation-delay: 240ms; }
+.card:nth-child(6) { animation-delay: 300ms; }
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.card-icon {
+  width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+}
+.card-count {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  background: rgba(255,255,255,0.04);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ═══════════════════════════════════════════════════
+   STAT CARDS (top row)
+   ═══════════════════════════════════════════════════ */
+.stat-card { text-align: center; padding: 24px 16px; }
+.stat-card .stat-icon {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  display: block;
+}
+.stat-card .stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  margin-bottom: 2px;
+}
+.stat-card .stat-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.stat-card .stat-sub {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  margin-top: 4px;
+}
+
+/* ═══════════════════════════════════════════════════
+   SESSIONS (SessionTimeline simplified)
+   ═══════════════════════════════════════════════════ */
+.session-list { display: flex; flex-direction: column; gap: 8px; }
+.session-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.session-item:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--border-subtle);
+}
+.session-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.session-dot.active { background: var(--accent-green); box-shadow: 0 0 6px var(--glow-green); }
+.session-dot.running { background: var(--accent-blue); box-shadow: 0 0 6px var(--glow-blue); animation: liveDot 1.5s ease-in-out infinite; }
+.session-dot.done { background: var(--text-tertiary); }
+
+.session-info { min-width: 0; }
+.session-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.session-type {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+.session-status {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  padding: 3px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+.session-status.idle { color: var(--accent-green); background: var(--glow-green); }
+.session-status.running { color: var(--accent-blue); background: var(--glow-blue); }
+.session-status.completed { color: var(--text-tertiary); background: rgba(255,255,255,0.04); }
+.session-tokens {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Session detail panel */
+.session-detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+.session-detail.open {
+  max-height: 300px;
+  opacity: 1;
+}
+.session-detail-inner {
+  padding: 12px 14px;
+  margin-top: 4px;
+  background: rgba(0,0,0,0.2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+.session-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 0.78rem;
+}
+.session-detail-row .label { color: var(--text-tertiary); }
+.session-detail-row .value { color: var(--text-secondary); font-family: var(--font-mono); }
+
+/* Timeline bar */
+.timeline-bar {
+  display: flex;
+  gap: 2px;
+  margin-top: 10px;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.timeline-segment {
+  height: 100%;
+  border-radius: 3px;
+  min-width: 4px;
+}
+
+/* ═══════════════════════════════════════════════════
+   NODE MAP
+   ═══════════════════════════════════════════════════ */
+.node-list { display: flex; flex-direction: column; gap: 10px; }
+.node-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.node-item:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--border-subtle);
+}
+.node-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center; justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.node-info { flex: 1; min-width: 0; }
+.node-name {
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+.node-meta {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+.node-signal {
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+}
+.node-signal-bar {
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent-green);
+}
+
+/* Node detail panel */
+.node-detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+.node-detail.open {
+  max-height: 200px;
+  opacity: 1;
+}
+.node-detail-inner {
+  padding: 12px 14px;
+  margin-top: 8px;
+  background: rgba(0,0,0,0.2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+.node-caps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.node-cap {
+  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.05);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+/* ═══════════════════════════════════════════════════
+   CRON BOARD
+   ═══════════════════════════════════════════════════ */
+.cron-grid { display: flex; flex-direction: column; gap: 10px; }
+.cron-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.cron-item:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--border-subtle);
+}
+.cron-icon-wrap {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center; justify-content: center;
+  font-size: 0.9rem;
+}
+.cron-info { min-width: 0; }
+.cron-name {
+  font-weight: 500;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cron-schedule {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+.cron-next {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--accent-amber);
+  white-space: nowrap;
+}
+.cron-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 20px;
+}
+.cron-spark-bar {
+  width: 4px;
+  border-radius: 2px;
+  transition: height 0.3s ease;
+}
+
+/* Cron detail panel */
+.cron-detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+.cron-detail.open {
+  max-height: 200px;
+  opacity: 1;
+}
+.cron-detail-inner {
+  padding: 12px 14px;
+  margin-top: 8px;
+  background: rgba(0,0,0,0.2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.78rem;
+}
+.cron-toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background var(--transition);
+  border: none;
+  outline: none;
+  flex-shrink: 0;
+}
+.cron-toggle.active { background: var(--accent-green); }
+.cron-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--transition);
+}
+.cron-toggle.active::after { transform: translateX(16px); }
+
+/* ═══════════════════════════════════════════════════
+   ACTIVITY FEED
+   ═══════════════════════════════════════════════════ */
+.feed-filters {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.feed-filter {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text-tertiary);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.feed-filter:hover { background: rgba(255,255,255,0.07); color: var(--text-secondary); }
+.feed-filter.active {
+  background: rgba(77, 159, 255, 0.1);
+  color: var(--accent-blue);
+  border-color: rgba(77, 159, 255, 0.2);
+}
+
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 340px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.feed-list::-webkit-scrollbar { width: 4px; }
+.feed-list::-webkit-scrollbar-track { background: transparent; }
+.feed-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.feed-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+  /* Slide-in animation */
+  animation: feedSlideIn 0.4s ease forwards;
+  opacity: 0;
+  transform: translateX(20px);
+}
+.feed-item:hover { background: rgba(255,255,255,0.03); }
+
+@keyframes feedSlideIn {
+  to { opacity: 1; transform: translateX(0); }
+}
+.feed-item:nth-child(1) { animation-delay: 0ms; }
+.feed-item:nth-child(2) { animation-delay: 40ms; }
+.feed-item:nth-child(3) { animation-delay: 80ms; }
+.feed-item:nth-child(4) { animation-delay: 120ms; }
+.feed-item:nth-child(5) { animation-delay: 160ms; }
+.feed-item:nth-child(6) { animation-delay: 200ms; }
+.feed-item:nth-child(7) { animation-delay: 240ms; }
+.feed-item:nth-child(8) { animation-delay: 280ms; }
+.feed-item:nth-child(9) { animation-delay: 320ms; }
+.feed-item:nth-child(10) { animation-delay: 360ms; }
+
+.feed-time {
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  min-width: 42px;
+  padding-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.feed-badge {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center; justify-content: center;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+.feed-content { flex: 1; min-width: 0; }
+.feed-text {
+  font-size: 0.82rem;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.feed-text code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: rgba(255,255,255,0.05);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+.feed-detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+  opacity: 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+.feed-detail.open {
+  max-height: 100px;
+  opacity: 1;
+  margin-top: 6px;
+}
+
+/* ═══════════════════════════════════════════════════
+   TOKEN BUDGET
+   ═══════════════════════════════════════════════════ */
+.token-section { display: flex; flex-direction: column; gap: 18px; }
+.token-meter-wrap { position: relative; }
+.token-meter-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.token-meter-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.token-meter-value {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.token-meter-bar {
+  height: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.token-meter-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+.token-meter-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 30px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2));
+  border-radius: 0 4px 4px 0;
+}
+
+.token-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.token-stat {
+  background: rgba(255,255,255,0.02);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+.token-stat-label {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  margin-bottom: 4px;
+}
+.token-stat-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.token-stat-sub {
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+
+/* ═══════════════════════════════════════════════════
+   CHANNELS
+   ═══════════════════════════════════════════════════ */
+.channel-list { display: flex; flex-direction: column; gap: 8px; }
+.channel-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.02);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+.channel-item:hover { background: rgba(255,255,255,0.04); }
+.channel-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.channel-dot.connected { background: var(--accent-green); box-shadow: 0 0 6px var(--glow-green); }
+.channel-dot.disconnected { background: var(--accent-red); opacity: 0.6; }
+.channel-name {
+  font-weight: 500;
+  font-size: 0.88rem;
+  flex: 1;
+}
+.channel-status {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+}
+.channel-count {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.04);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .dashboard { padding: 16px 12px 40px; }
+  .stats-row { grid-template-columns: 1fr; }
+  .main-grid { grid-template-columns: 1fr; }
+  .header { flex-direction: column; gap: 12px; text-align: center; }
+  .header-right { align-self: center; }
+  .pulse-container { width: 120px; height: 120px; }
+  .pulse-orb { width: 48px; height: 48px; }
+  .session-item { grid-template-columns: auto 1fr auto; }
+  .session-tokens { display: none; }
+  .cron-item { grid-template-columns: auto 1fr auto; }
+  .cron-sparkline { display: none; }
+}
+
+@media (max-width: 480px) {
+  html { font-size: 14px; }
+  .stats-row { gap: 10px; }
+  .stat-card .stat-value { font-size: 1.4rem; }
+}
+
+/* ═══════════════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   UTILITY
+   ═══════════════════════════════════════════════════ */
+.text-green { color: var(--accent-green); }
+.text-amber { color: var(--accent-amber); }
+.text-blue { color: var(--accent-blue); }
+.text-red { color: var(--accent-red); }
+.text-purple { color: var(--accent-purple); }
+.bg-green { background: var(--glow-green); }
+.bg-amber { background: var(--glow-amber); }
+.bg-blue { background: var(--glow-blue); }
+.bg-red { background: var(--glow-red); }
+.bg-purple { background: var(--glow-purple); }
+
+/* Section titles between grids */
+.section-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-bottom: 12px;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+
+<div class="dashboard">
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header class="header">
+    <div class="header-left">
+      <div class="logo">Open<span>Claw</span></div>
+      <div class="header-badge"><span class="dot"></span> Live</div>
+    </div>
+    <div class="header-right">
+      <div class="header-meta">
+        <div id="clock">17:52:34</div>
+        <div class="uptime">uptime 3d 14h 22m</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════ STATUS PULSE ═══════════ -->
+  <section class="status-pulse-section">
+    <div class="pulse-container" id="pulseContainer">
+      <div class="pulse-orb thinking" id="pulseOrb"></div>
+      <div class="pulse-ring"></div>
+      <div class="pulse-ring"></div>
+      <div class="pulse-ring"></div>
+      <!-- Orbiting sub-agent dots -->
+      <div class="orbit-track">
+        <div class="orbit-dot running" title="sub-agent-1 (running)"></div>
+      </div>
+      <div class="orbit-track">
+        <div class="orbit-dot completed" title="sub-agent-2 (completed)"></div>
+      </div>
+    </div>
+    <div class="pulse-status">
+      <div class="pulse-status-label">Agent Status</div>
+      <div class="pulse-status-value thinking-text" id="pulseStatusText">Thinking</div>
+      <div class="pulse-model">claude-opus-4</div>
+    </div>
+  </section>
+
+  <!-- ═══════════ STAT CARDS ═══════════ -->
+  <div class="stats-row">
+    <div class="card stat-card clickable" data-expand="stat-sessions">
+      <span class="stat-icon">&#x1F916;</span>
+      <div class="stat-value text-blue">3</div>
+      <div class="stat-label">Active Sessions</div>
+      <div class="stat-sub">1 main + 2 sub-agents</div>
+    </div>
+    <div class="card stat-card clickable" data-expand="stat-nodes">
+      <span class="stat-icon">&#x1F4E1;</span>
+      <div class="stat-value text-green">1</div>
+      <div class="stat-label">Nodes Online</div>
+      <div class="stat-sub">Boss-MacBook</div>
+    </div>
+    <div class="card stat-card clickable" data-expand="stat-cron">
+      <span class="stat-icon">&#x23F0;</span>
+      <div class="stat-value text-amber">3</div>
+      <div class="stat-label">Cron Jobs</div>
+      <div class="stat-sub">next in 4m 32s</div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SESSION TIMELINE + NODE MAP ═══════════ -->
+  <div class="main-grid">
+
+    <!-- Sessions -->
+    <div class="card" style="animation-delay: 150ms;">
+      <div class="card-header">
+        <div class="card-title"><span class="card-icon">&#x1F50C;</span> Sessions</div>
+        <span class="card-count">3 active</span>
+      </div>
+      <div class="session-list">
+        <!-- Main session -->
+        <div class="session-item" data-session="main">
+          <span class="session-dot active"></span>
+          <div class="session-info">
+            <div class="session-name">main</div>
+            <div class="session-type">Telegram &middot; claude-opus-4</div>
+          </div>
+          <span class="session-status idle">Idle</span>
+          <span class="session-tokens">2,147 tok</span>
+        </div>
+        <div class="session-detail" id="detail-main">
+          <div class="session-detail-inner">
+            <div class="session-detail-row"><span class="label">Model</span><span class="value">claude-opus-4</span></div>
+            <div class="session-detail-row"><span class="label">Channel</span><span class="value">Telegram</span></div>
+            <div class="session-detail-row"><span class="label">Messages</span><span class="value">34 in / 32 out</span></div>
+            <div class="session-detail-row"><span class="label">Started</span><span class="value">14:28:11</span></div>
+            <div class="session-detail-row"><span class="label">Tools Used</span><span class="value">exec, memory, web</span></div>
+            <div class="timeline-bar">
+              <div class="timeline-segment" style="flex:3;background:var(--accent-green);opacity:0.6;"></div>
+              <div class="timeline-segment" style="flex:1;background:var(--accent-amber);"></div>
+              <div class="timeline-segment" style="flex:2;background:var(--accent-blue);"></div>
+              <div class="timeline-segment" style="flex:1;background:var(--accent-green);opacity:0.6;"></div>
+              <div class="timeline-segment" style="flex:1;background:var(--accent-amber);"></div>
+              <div class="timeline-segment" style="flex:4;background:var(--accent-green);opacity:0.3;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-agent 1 -->
+        <div class="session-item" data-session="sub1">
+          <span class="session-dot running"></span>
+          <div class="session-info">
+            <div class="session-name">sub-agent-1</div>
+            <div class="session-type">Isolated &middot; code-review</div>
+          </div>
+          <span class="session-status running">Running</span>
+          <span class="session-tokens">853 tok</span>
+        </div>
+        <div class="session-detail" id="detail-sub1">
+          <div class="session-detail-inner">
+            <div class="session-detail-row"><span class="label">Task</span><span class="value">Review PR #142</span></div>
+            <div class="session-detail-row"><span class="label">Model</span><span class="value">claude-opus-4</span></div>
+            <div class="session-detail-row"><span class="label">Spawned by</span><span class="value">main</span></div>
+            <div class="session-detail-row"><span class="label">Duration</span><span class="value">1m 42s</span></div>
+            <div class="timeline-bar">
+              <div class="timeline-segment" style="flex:1;background:var(--accent-blue);"></div>
+              <div class="timeline-segment" style="flex:2;background:var(--accent-amber);"></div>
+              <div class="timeline-segment" style="flex:1;background:var(--accent-blue);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sub-agent 2 -->
+        <div class="session-item" data-session="sub2">
+          <span class="session-dot done"></span>
+          <div class="session-info">
+            <div class="session-name">sub-agent-2</div>
+            <div class="session-type">Isolated &middot; data-fetch</div>
+          </div>
+          <span class="session-status completed">Completed</span>
+          <span class="session-tokens">1,204 tok</span>
+        </div>
+        <div class="session-detail" id="detail-sub2">
+          <div class="session-detail-inner">
+            <div class="session-detail-row"><span class="label">Task</span><span class="value">Fetch API metrics</span></div>
+            <div class="session-detail-row"><span class="label">Model</span><span class="value">claude-haiku-4-5</span></div>
+            <div class="session-detail-row"><span class="label">Result</span><span class="value text-green">Success</span></div>
+            <div class="session-detail-row"><span class="label">Duration</span><span class="value">28s</span></div>
+            <div class="timeline-bar">
+              <div class="timeline-segment" style="flex:1;background:var(--accent-blue);"></div>
+              <div class="timeline-segment" style="flex:1;background:var(--accent-green);"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Node Map + Channels stacked -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <!-- Node Map -->
+      <div class="card" style="animation-delay: 210ms;">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">&#x1F5A5;</span> Nodes</div>
+          <span class="card-count">1 online</span>
+        </div>
+        <div class="node-list">
+          <div class="node-item" data-node="boss">
+            <div class="node-icon bg-blue">&#x1F4BB;</div>
+            <div class="node-info">
+              <div class="node-name">Boss-MacBook</div>
+              <div class="node-meta">macOS 15.3 &middot; M3 Pro &middot; 18GB</div>
+            </div>
+            <div class="node-signal">
+              <div class="node-signal-bar" style="height:6px;"></div>
+              <div class="node-signal-bar" style="height:10px;"></div>
+              <div class="node-signal-bar" style="height:14px;"></div>
+              <div class="node-signal-bar" style="height:18px;"></div>
+            </div>
+          </div>
+          <div class="node-detail" id="detail-boss">
+            <div class="node-detail-inner">
+              <div class="session-detail-row"><span class="label">IP</span><span class="value">192.168.1.42</span></div>
+              <div class="session-detail-row"><span class="label">Last Ping</span><span class="value">12ms</span></div>
+              <div class="session-detail-row"><span class="label">CPU</span><span class="value">23%</span></div>
+              <div class="session-detail-row"><span class="label">Disk</span><span class="value">412GB free</span></div>
+              <div class="node-caps">
+                <span class="node-cap">exec</span>
+                <span class="node-cap">screenshot</span>
+                <span class="node-cap">browser</span>
+                <span class="node-cap">filesystem</span>
+                <span class="node-cap">clipboard</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Channels -->
+      <div class="card" style="animation-delay: 270ms;">
+        <div class="card-header">
+          <div class="card-title"><span class="card-icon">&#x1F4AC;</span> Channels</div>
+          <span class="card-count">2 connected</span>
+        </div>
+        <div class="channel-list">
+          <div class="channel-item">
+            <span class="channel-dot connected"></span>
+            <span class="channel-name">Telegram</span>
+            <span class="channel-status">Connected</span>
+            <span class="channel-count">12 chats</span>
+          </div>
+          <div class="channel-item">
+            <span class="channel-dot connected"></span>
+            <span class="channel-name">WhatsApp</span>
+            <span class="channel-status">Connected</span>
+            <span class="channel-count">3 chats</span>
+          </div>
+          <div class="channel-item">
+            <span class="channel-dot disconnected"></span>
+            <span class="channel-name">Discord</span>
+            <span class="channel-status" style="color:var(--accent-red);">Disconnected</span>
+            <span class="channel-count">&mdash;</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ CRON BOARD + TOKEN BUDGET ═══════════ -->
+  <div class="main-grid">
+    <!-- Cron Board -->
+    <div class="card" style="animation-delay: 330ms;">
+      <div class="card-header">
+        <div class="card-title"><span class="card-icon">&#x23F0;</span> Cron Jobs</div>
+        <span class="card-count">3 scheduled</span>
+      </div>
+      <div class="cron-grid">
+        <!-- Cron 1 -->
+        <div class="cron-item" data-cron="pr-monitor">
+          <div class="cron-icon-wrap bg-green">&#x1F50D;</div>
+          <div class="cron-info">
+            <div class="cron-name">PR Monitor</div>
+            <div class="cron-schedule">*/15 * * * *</div>
+          </div>
+          <div class="cron-sparkline" id="spark-pr"></div>
+          <div class="cron-next" id="cron-next-1">4m 32s</div>
+        </div>
+        <div class="cron-detail" id="detail-pr-monitor">
+          <div class="cron-detail-inner">
+            <div class="session-detail-row"><span class="label">Last Run</span><span class="value text-green">Success &middot; 17:45:00</span></div>
+            <div class="session-detail-row"><span class="label">Duration</span><span class="value">8.3s</span></div>
+            <div class="session-detail-row"><span class="label">Result</span><span class="value">2 PRs checked, 0 action needed</span></div>
+          </div>
+        </div>
+
+        <!-- Cron 2 -->
+        <div class="cron-item" data-cron="daily-digest">
+          <div class="cron-icon-wrap bg-purple">&#x1F4E8;</div>
+          <div class="cron-info">
+            <div class="cron-name">Daily Digest</div>
+            <div class="cron-schedule">0 9 * * *</div>
+          </div>
+          <div class="cron-sparkline" id="spark-digest"></div>
+          <div class="cron-next">15h 8m</div>
+        </div>
+        <div class="cron-detail" id="detail-daily-digest">
+          <div class="cron-detail-inner">
+            <div class="session-detail-row"><span class="label">Last Run</span><span class="value text-green">Success &middot; 09:00:02</span></div>
+            <div class="session-detail-row"><span class="label">Duration</span><span class="value">12.1s</span></div>
+            <div class="session-detail-row"><span class="label">Result</span><span class="value">Digest sent to Telegram</span></div>
+          </div>
+        </div>
+
+        <!-- Cron 3 -->
+        <div class="cron-item" data-cron="health-check">
+          <div class="cron-icon-wrap bg-amber">&#x1F3E5;</div>
+          <div class="cron-info">
+            <div class="cron-name">Health Check</div>
+            <div class="cron-schedule">*/5 * * * *</div>
+          </div>
+          <div class="cron-sparkline" id="spark-health"></div>
+          <div class="cron-next" id="cron-next-3">1m 12s</div>
+        </div>
+        <div class="cron-detail" id="detail-health-check">
+          <div class="cron-detail-inner">
+            <div class="session-detail-row"><span class="label">Last Run</span><span class="value text-green">Success &middot; 17:50:00</span></div>
+            <div class="session-detail-row"><span class="label">Duration</span><span class="value">1.2s</span></div>
+            <div class="session-detail-row"><span class="label">Result</span><span class="value">All services healthy</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Token Budget -->
+    <div class="card" style="animation-delay: 390ms;">
+      <div class="card-header">
+        <div class="card-title"><span class="card-icon">&#x1F4CA;</span> Token Budget</div>
+      </div>
+      <div class="token-section">
+        <!-- Context window usage -->
+        <div class="token-meter-wrap">
+          <div class="token-meter-header">
+            <span class="token-meter-label">Context Window</span>
+            <span class="token-meter-value">4,204 / 200K</span>
+          </div>
+          <div class="token-meter-bar">
+            <div class="token-meter-fill" style="width: 2.1%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));"></div>
+          </div>
+        </div>
+
+        <!-- Daily usage -->
+        <div class="token-meter-wrap">
+          <div class="token-meter-header">
+            <span class="token-meter-label">Daily Usage</span>
+            <span class="token-meter-value">47,832 / 500K</span>
+          </div>
+          <div class="token-meter-bar">
+            <div class="token-meter-fill" style="width: 9.6%; background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));"></div>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div class="token-stats">
+          <div class="token-stat">
+            <div class="token-stat-label">Today&rsquo;s Cost</div>
+            <div class="token-stat-value text-green">$0.84</div>
+            <div class="token-stat-sub">~$25.20/mo</div>
+          </div>
+          <div class="token-stat">
+            <div class="token-stat-label">Avg / Session</div>
+            <div class="token-stat-value text-blue">1,402</div>
+            <div class="token-stat-sub">tokens</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ACTIVITY FEED ═══════════ -->
+  <div class="card full-width" style="animation-delay: 450ms;">
+    <div class="card-header">
+      <div class="card-title"><span class="card-icon">&#x26A1;</span> Activity Feed</div>
+      <span class="card-count" id="feedCount">10 events</span>
+    </div>
+    <div class="feed-filters">
+      <button class="feed-filter active" data-filter="all">All</button>
+      <button class="feed-filter" data-filter="message">Messages</button>
+      <button class="feed-filter" data-filter="tool">Tools</button>
+      <button class="feed-filter" data-filter="cron">Cron</button>
+      <button class="feed-filter" data-filter="system">System</button>
+    </div>
+    <div class="feed-list" id="feedList">
+      <!-- Feed items populated by JS -->
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   MOCK DATA & INTERACTIONS
+   ═══════════════════════════════════════════════════ */
+
+// ── Clock ──
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const s = String(now.getSeconds()).padStart(2, '0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── Status Pulse cycling ──
+const states = [
+  { cls: 'thinking', text: 'Thinking', textCls: 'thinking-text' },
+  { cls: 'thinking', text: 'Thinking', textCls: 'thinking-text' },
+  { cls: 'streaming', text: 'Responding', textCls: 'streaming-text' },
+  { cls: '', text: 'Idle', textCls: 'idle-text' },
+  { cls: '', text: 'Idle', textCls: 'idle-text' },
+];
+let stateIdx = 0;
+const orb = document.getElementById('pulseOrb');
+const statusText = document.getElementById('pulseStatusText');
+
+function cycleState() {
+  const state = states[stateIdx];
+  orb.className = 'pulse-orb ' + state.cls;
+  statusText.className = 'pulse-status-value ' + state.textCls;
+  statusText.textContent = state.text;
+  stateIdx = (stateIdx + 1) % states.length;
+}
+setInterval(cycleState, 5000);
+
+// Click orb to manually cycle
+orb.addEventListener('click', cycleState);
+
+// ── Expand/collapse panels ──
+document.querySelectorAll('.session-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const key = item.dataset.session;
+    const detail = document.getElementById('detail-' + key);
+    if (detail) detail.classList.toggle('open');
+  });
+});
+document.querySelectorAll('.node-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const key = item.dataset.node;
+    const detail = document.getElementById('detail-' + key);
+    if (detail) detail.classList.toggle('open');
+  });
+});
+document.querySelectorAll('.cron-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const key = item.dataset.cron;
+    const detail = document.getElementById('detail-' + key);
+    if (detail) detail.classList.toggle('open');
+  });
+});
+
+// ── Activity Feed ──
+const feedData = [
+  { time: '17:52', type: 'tool',    icon: '&#x1F6E0;', text: 'exec: <code>git push origin fix/cron-retry</code>',         detail: 'Push to remote completed in 2.1s, 3 commits pushed' },
+  { time: '17:51', type: 'system',  icon: '&#x1F9E0;', text: 'thinking: analyzing cron retry logic...',                     detail: 'Context: reviewing error handling in scheduler module' },
+  { time: '17:50', type: 'message', icon: '&#x1F4E9;', text: 'telegram: message from <strong>Boss</strong>',                detail: '"Can you check why the health check failed at 3am?"' },
+  { time: '17:49', type: 'tool',    icon: '&#x1F50D;', text: 'memory: searched <code>cron retry logic</code>',              detail: 'Found 3 relevant memories, loaded into context' },
+  { time: '17:48', type: 'cron',    icon: '&#x2705;',  text: 'cron: <strong>PR Monitor</strong> completed',                 detail: 'Checked 2 open PRs, no action needed. Duration: 8.3s' },
+  { time: '17:45', type: 'tool',    icon: '&#x1F6E0;', text: 'exec: <code>npm test -- --grep cron</code>',                  detail: '14 tests passed, 0 failed. Duration: 4.7s' },
+  { time: '17:43', type: 'message', icon: '&#x1F4AC;', text: 'whatsapp: message from <strong>DevTeam</strong> group',       detail: '"Deployment to staging looks good, proceeding with prod"' },
+  { time: '17:40', type: 'cron',    icon: '&#x2705;',  text: 'cron: <strong>Health Check</strong> completed',               detail: 'All 5 services healthy. Response times: 12-45ms' },
+  { time: '17:38', type: 'system',  icon: '&#x1F504;', text: 'sub-agent-2 completed: <strong>Fetch API metrics</strong>',   detail: 'Result: 1,204 tokens used, data stored to memory' },
+  { time: '17:35', type: 'system',  icon: '&#x1F680;', text: 'sub-agent-1 spawned: <strong>Review PR #142</strong>',        detail: 'Model: claude-opus-4, isolated session' },
+];
+
+const feedColors = {
+  tool:    { bg: 'bg-blue',   text: 'text-blue' },
+  message: { bg: 'bg-green',  text: 'text-green' },
+  cron:    { bg: 'bg-amber',  text: 'text-amber' },
+  system:  { bg: 'bg-purple', text: 'text-purple' },
+};
+
+function renderFeed(filter) {
+  const list = document.getElementById('feedList');
+  const filtered = filter === 'all' ? feedData : feedData.filter(d => d.type === filter);
+  document.getElementById('feedCount').textContent = filtered.length + ' events';
+
+  list.innerHTML = filtered.map((d, i) => {
+    const c = feedColors[d.type];
+    return `
+      <div class="feed-item" data-feed-idx="${i}" style="animation-delay:${i * 40}ms;">
+        <span class="feed-time">${d.time}</span>
+        <span class="feed-badge ${c.bg} ${c.text}">${d.icon}</span>
+        <div class="feed-content">
+          <div class="feed-text">${d.text}</div>
+          <div class="feed-detail" id="feed-detail-${filter}-${i}">${d.detail}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Rebind click handlers
+  list.querySelectorAll('.feed-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const detailEl = item.querySelector('.feed-detail');
+      if (detailEl) detailEl.classList.toggle('open');
+    });
+  });
+}
+renderFeed('all');
+
+// Feed filters
+document.querySelectorAll('.feed-filter').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.feed-filter').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderFeed(btn.dataset.filter);
+  });
+});
+
+// ── Sparklines ──
+function renderSparkline(containerId, data) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const max = Math.max(...data.map(d => d.v));
+  el.innerHTML = data.map(d => {
+    const h = Math.max(3, (d.v / max) * 20);
+    const color = d.ok ? 'var(--accent-green)' : 'var(--accent-red)';
+    return `<div class="cron-spark-bar" style="height:${h}px;background:${color};"></div>`;
+  }).join('');
+}
+
+renderSparkline('spark-pr', [
+  {v:8,ok:1},{v:7,ok:1},{v:9,ok:1},{v:8,ok:1},{v:12,ok:0},{v:7,ok:1},{v:8,ok:1},{v:9,ok:1}
+]);
+renderSparkline('spark-digest', [
+  {v:12,ok:1},{v:11,ok:1},{v:13,ok:1},{v:12,ok:1},{v:14,ok:1},{v:11,ok:1},{v:12,ok:1}
+]);
+renderSparkline('spark-health', [
+  {v:1,ok:1},{v:1,ok:1},{v:2,ok:1},{v:1,ok:1},{v:1,ok:1},{v:3,ok:0},{v:1,ok:1},{v:1,ok:1},{v:1,ok:1},{v:1,ok:1}
+]);
+
+// ── Cron countdown (simulated) ──
+let cron1Sec = 272; // 4m 32s
+let cron3Sec = 72;  // 1m 12s
+
+function fmtCountdown(sec) {
+  if (sec <= 0) return 'running...';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${m}m ${String(s).padStart(2, '0')}s`;
+}
+
+setInterval(() => {
+  cron1Sec = cron1Sec > 0 ? cron1Sec - 1 : 900;
+  cron3Sec = cron3Sec > 0 ? cron3Sec - 1 : 300;
+  const el1 = document.getElementById('cron-next-1');
+  const el3 = document.getElementById('cron-next-3');
+  if (el1) el1.textContent = fmtCountdown(cron1Sec);
+  if (el3) el3.textContent = fmtCountdown(cron3Sec);
+}, 1000);
+
+// ── Keyboard navigation ──
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.session-detail.open, .node-detail.open, .cron-detail.open, .feed-detail.open')
+      .forEach(el => el.classList.remove('open'));
+  }
+});
+
+// ── Simulate new feed item appearing ──
+let simCounter = 0;
+const simEvents = [
+  { time: '', type: 'system',  icon: '&#x1F4C8;', text: 'memory: auto-compacted context (saved 1,200 tokens)', detail: 'Removed 3 stale memories from working set' },
+  { time: '', type: 'message', icon: '&#x1F4E9;', text: 'telegram: message from <strong>Boss</strong>',        detail: '"Looks great, ship it when ready"' },
+  { time: '', type: 'tool',    icon: '&#x1F6E0;', text: 'exec: <code>npm run build</code>',                     detail: 'Build completed successfully in 3.2s' },
+];
+
+setInterval(() => {
+  if (simCounter >= simEvents.length) return;
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2, '0');
+  const m = String(now.getMinutes()).padStart(2, '0');
+  const evt = { ...simEvents[simCounter], time: `${h}:${m}` };
+  feedData.unshift(evt);
+  // Re-render if "all" filter is active
+  const activeFilter = document.querySelector('.feed-filter.active');
+  if (activeFilter) renderFeed(activeFilter.dataset.filter);
+  simCounter++;
+}, 12000);
+</script>
+
+</body>
+</html>
