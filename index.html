@@ -80,6 +80,167 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════════
+   CONNECTION PANEL
+   ═══════════════════════════════════════════════════ */
+.connection-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+  user-select: none;
+}
+.connection-bar:hover { border-color: var(--border); background: var(--bg-card-hover); }
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.connection-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all var(--transition);
+}
+.connection-dot.connected { background: var(--accent-green); box-shadow: 0 0 8px var(--glow-green); }
+.connection-dot.connecting { background: var(--accent-amber); box-shadow: 0 0 8px var(--glow-amber); animation: liveDot 1s ease-in-out infinite; }
+.connection-dot.disconnected { background: var(--text-tertiary); }
+.connection-dot.error { background: var(--accent-red); box-shadow: 0 0 8px var(--glow-red); }
+.connection-dot.demo { background: var(--accent-purple); box-shadow: 0 0 8px var(--glow-purple); }
+
+.connection-label {
+  font-size: 0.78rem;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+.connection-error-hint {
+  font-size: 0.72rem;
+  color: var(--accent-red);
+  margin-left: 8px;
+}
+.connection-toggle {
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  color: var(--text-tertiary);
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px;
+  transition: all var(--transition);
+}
+.connection-bar:hover .connection-toggle { color: var(--text-secondary); background: rgba(255,255,255,0.07); }
+
+.connection-settings {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  opacity: 0;
+}
+.connection-settings.open {
+  max-height: 400px;
+  opacity: 1;
+}
+.connection-settings-inner {
+  padding: 16px;
+  margin-bottom: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.conn-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+.conn-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+.conn-field label {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+.conn-field input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color var(--transition);
+  width: 100%;
+}
+.conn-field input:focus { border-color: var(--accent-blue); }
+.conn-field input::placeholder { color: var(--text-tertiary); }
+
+.conn-buttons {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.conn-btn {
+  padding: 8px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.conn-btn:hover { background: rgba(255,255,255,0.08); border-color: var(--accent-blue); }
+.conn-btn.primary {
+  background: rgba(77, 159, 255, 0.15);
+  border-color: rgba(77, 159, 255, 0.3);
+  color: var(--accent-blue);
+}
+.conn-btn.primary:hover { background: rgba(77, 159, 255, 0.25); }
+.conn-btn.danger {
+  color: var(--accent-red);
+  border-color: rgba(255, 77, 106, 0.2);
+}
+.conn-btn.danger:hover { background: rgba(255, 77, 106, 0.1); }
+.conn-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.conn-error {
+  font-size: 0.78rem;
+  color: var(--accent-red);
+  font-family: var(--font-mono);
+  padding: 8px 12px;
+  background: rgba(255, 77, 106, 0.08);
+  border-radius: var(--radius-sm);
+  display: none;
+}
+.conn-error.visible { display: block; }
+
+.conn-info {
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════════════════
    HEADER
    ═══════════════════════════════════════════════════ */
 .header {
@@ -106,21 +267,41 @@ body::before {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 214, 143, 0.1);
-  border: 1px solid rgba(0, 214, 143, 0.2);
-  color: var(--accent-green);
   padding: 4px 12px;
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 500;
   font-family: var(--font-mono);
+  transition: all var(--transition);
+}
+.header-badge.live {
+  background: rgba(0, 214, 143, 0.1);
+  border: 1px solid rgba(0, 214, 143, 0.2);
+  color: var(--accent-green);
+}
+.header-badge.demo {
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  color: var(--accent-purple);
+}
+.header-badge.offline {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+}
+.header-badge.error {
+  background: rgba(255, 77, 106, 0.1);
+  border: 1px solid rgba(255, 77, 106, 0.2);
+  color: var(--accent-red);
 }
 .header-badge .dot {
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: var(--accent-green);
+  background: currentColor;
   animation: liveDot 2s ease-in-out infinite;
 }
+.header-badge.offline .dot,
+.header-badge.error .dot { animation: none; }
 .header-right {
   display: flex;
   align-items: center;
@@ -193,6 +374,13 @@ body::before {
     0 0 100px rgba(77, 159, 255, 0.1),
     inset 0 -4px 12px rgba(0, 0, 0, 0.3);
 }
+.pulse-orb.disconnected {
+  background: radial-gradient(circle at 35% 35%, #6a6a7e, #5a5a72 50%, #3a3a4e);
+  box-shadow:
+    0 0 20px rgba(90, 90, 114, 0.3),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.3);
+  animation: orbBreathe 4s ease-in-out infinite;
+}
 
 @keyframes orbBreathe {
   0%, 100% { transform: scale(1); filter: brightness(1); }
@@ -212,6 +400,7 @@ body::before {
 .pulse-ring:nth-child(3) { animation-delay: 2s; }
 .pulse-orb.thinking ~ .pulse-ring { border-color: rgba(255, 170, 0, 0.25); }
 .pulse-orb.streaming ~ .pulse-ring { border-color: rgba(77, 159, 255, 0.25); }
+.pulse-orb.disconnected ~ .pulse-ring { border-color: rgba(90, 90, 114, 0.15); }
 
 @keyframes pulseRing {
   0% { transform: scale(0.5); opacity: 0.8; }
@@ -273,6 +462,7 @@ body::before {
 .pulse-status-value.thinking-text { color: var(--accent-amber); }
 .pulse-status-value.idle-text { color: var(--accent-green); }
 .pulse-status-value.streaming-text { color: var(--accent-blue); }
+.pulse-status-value.disconnected-text { color: var(--text-tertiary); }
 
 .pulse-model {
   font-family: var(--font-mono);
@@ -315,7 +505,6 @@ body::before {
   box-shadow: var(--shadow-card);
   position: relative;
   overflow: hidden;
-  /* Fade-up entrance animation */
   opacity: 0;
   transform: translateY(16px);
   animation: fadeUp 0.6s ease forwards;
@@ -409,7 +598,7 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════════
-   SESSIONS (SessionTimeline simplified)
+   SESSIONS
    ═══════════════════════════════════════════════════ */
 .session-list { display: flex; flex-direction: column; gap: 8px; }
 .session-item {
@@ -742,7 +931,6 @@ body::before {
   border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all var(--transition);
-  /* Slide-in animation */
   animation: feedSlideIn 0.4s ease forwards;
   opacity: 0;
   transform: translateX(20px);
@@ -754,14 +942,14 @@ body::before {
 }
 .feed-item:nth-child(1) { animation-delay: 0ms; }
 .feed-item:nth-child(2) { animation-delay: 40ms; }
-.feed-item:nth-child(3) { animation-delay: 80ms; }
-.feed-item:nth-child(4) { animation-delay: 120ms; }
-.feed-item:nth-child(5) { animation-delay: 160ms; }
-.feed-item:nth-child(6) { animation-delay: 200ms; }
-.feed-item:nth-child(7) { animation-delay: 240ms; }
-.feed-item:nth-child(8) { animation-delay: 280ms; }
-.feed-item:nth-child(9) { animation-delay: 320ms; }
-.feed-item:nth-child(10) { animation-delay: 360ms; }
+.feed-item:nth-child(3) { animation-delay: 40ms; }
+.feed-item:nth-child(4) { animation-delay: 80ms; }
+.feed-item:nth-child(5) { animation-delay: 100ms; }
+.feed-item:nth-child(6) { animation-delay: 120ms; }
+.feed-item:nth-child(7) { animation-delay: 140ms; }
+.feed-item:nth-child(8) { animation-delay: 160ms; }
+.feed-item:nth-child(9) { animation-delay: 180ms; }
+.feed-item:nth-child(10) { animation-delay: 200ms; }
 
 .feed-time {
   font-size: 0.7rem;
@@ -920,6 +1108,17 @@ body::before {
 }
 
 /* ═══════════════════════════════════════════════════
+   EMPTY STATE
+   ═══════════════════════════════════════════════════ */
+.empty-state {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--text-tertiary);
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════ */
 @media (max-width: 768px) {
@@ -934,6 +1133,7 @@ body::before {
   .session-tokens { display: none; }
   .cron-item { grid-template-columns: auto 1fr auto; }
   .cron-sparkline { display: none; }
+  .conn-row { flex-direction: column; }
 }
 
 @media (max-width: 480px) {
@@ -967,7 +1167,6 @@ body::before {
 .bg-red { background: var(--glow-red); }
 .bg-purple { background: var(--glow-purple); }
 
-/* Section titles between grids */
 .section-label {
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -982,16 +1181,49 @@ body::before {
 <body>
 
 <div class="dashboard">
+  <!-- ═══════════ CONNECTION PANEL ═══════════ -->
+  <div class="connection-bar" id="connectionBar">
+    <div class="connection-status">
+      <span class="connection-dot demo" id="connectionDot"></span>
+      <span class="connection-label" id="connectionLabel">Demo Mode</span>
+      <span class="connection-error-hint" id="connectionErrorHint"></span>
+    </div>
+    <span class="connection-toggle" id="connectionToggle">Settings</span>
+  </div>
+  <div class="connection-settings" id="connectionSettings">
+    <div class="connection-settings-inner">
+      <div class="conn-row">
+        <div class="conn-field">
+          <label>Gateway URL</label>
+          <input type="text" id="gatewayUrlInput" placeholder="ws://localhost:18789">
+        </div>
+        <div class="conn-field">
+          <label>Auth Token</label>
+          <input type="password" id="authTokenInput" placeholder="Enter token (optional)">
+        </div>
+      </div>
+      <div class="conn-row">
+        <div class="conn-buttons">
+          <button class="conn-btn primary" id="connectBtn">Connect</button>
+          <button class="conn-btn" id="disconnectBtn" style="display:none;">Disconnect</button>
+          <button class="conn-btn" id="demoBtn">Demo Mode</button>
+        </div>
+        <div class="conn-info" id="connInfo"></div>
+      </div>
+      <div class="conn-error" id="connError"></div>
+    </div>
+  </div>
+
   <!-- ═══════════ HEADER ═══════════ -->
   <header class="header">
     <div class="header-left">
       <div class="logo">Open<span>Claw</span></div>
-      <div class="header-badge"><span class="dot"></span> Live</div>
+      <div class="header-badge demo" id="headerBadge"><span class="dot"></span> <span id="headerBadgeText">Demo</span></div>
     </div>
     <div class="header-right">
       <div class="header-meta">
-        <div id="clock">17:52:34</div>
-        <div class="uptime">uptime 3d 14h 22m</div>
+        <div id="clock">--:--:--</div>
+        <div class="uptime" id="uptimeText">demo mode</div>
       </div>
     </div>
   </header>
@@ -999,131 +1231,51 @@ body::before {
   <!-- ═══════════ STATUS PULSE ═══════════ -->
   <section class="status-pulse-section">
     <div class="pulse-container" id="pulseContainer">
-      <div class="pulse-orb thinking" id="pulseOrb"></div>
+      <div class="pulse-orb" id="pulseOrb"></div>
       <div class="pulse-ring"></div>
       <div class="pulse-ring"></div>
       <div class="pulse-ring"></div>
-      <!-- Orbiting sub-agent dots -->
-      <div class="orbit-track">
-        <div class="orbit-dot running" title="sub-agent-1 (running)"></div>
-      </div>
-      <div class="orbit-track">
-        <div class="orbit-dot completed" title="sub-agent-2 (completed)"></div>
-      </div>
+      <!-- Orbiting sub-agent dots rendered dynamically -->
     </div>
     <div class="pulse-status">
       <div class="pulse-status-label">Agent Status</div>
-      <div class="pulse-status-value thinking-text" id="pulseStatusText">Thinking</div>
-      <div class="pulse-model">claude-opus-4</div>
+      <div class="pulse-status-value idle-text" id="pulseStatusText">Idle</div>
+      <div class="pulse-model" id="pulseModel">--</div>
     </div>
   </section>
 
   <!-- ═══════════ STAT CARDS ═══════════ -->
   <div class="stats-row">
-    <div class="card stat-card clickable" data-expand="stat-sessions">
+    <div class="card stat-card clickable">
       <span class="stat-icon">&#x1F916;</span>
-      <div class="stat-value text-blue">3</div>
+      <div class="stat-value text-blue" id="statSessionsValue">--</div>
       <div class="stat-label">Active Sessions</div>
-      <div class="stat-sub">1 main + 2 sub-agents</div>
+      <div class="stat-sub" id="statSessionsSub">loading...</div>
     </div>
-    <div class="card stat-card clickable" data-expand="stat-nodes">
+    <div class="card stat-card clickable">
       <span class="stat-icon">&#x1F4E1;</span>
-      <div class="stat-value text-green">1</div>
+      <div class="stat-value text-green" id="statNodesValue">--</div>
       <div class="stat-label">Nodes Online</div>
-      <div class="stat-sub">Boss-MacBook</div>
+      <div class="stat-sub" id="statNodesSub">loading...</div>
     </div>
-    <div class="card stat-card clickable" data-expand="stat-cron">
+    <div class="card stat-card clickable">
       <span class="stat-icon">&#x23F0;</span>
-      <div class="stat-value text-amber">3</div>
+      <div class="stat-value text-amber" id="statCronValue">--</div>
       <div class="stat-label">Cron Jobs</div>
-      <div class="stat-sub">next in 4m 32s</div>
+      <div class="stat-sub" id="statCronSub">loading...</div>
     </div>
   </div>
 
   <!-- ═══════════ SESSION TIMELINE + NODE MAP ═══════════ -->
   <div class="main-grid">
-
     <!-- Sessions -->
     <div class="card" style="animation-delay: 150ms;">
       <div class="card-header">
         <div class="card-title"><span class="card-icon">&#x1F50C;</span> Sessions</div>
-        <span class="card-count">3 active</span>
+        <span class="card-count" id="sessionsCount">--</span>
       </div>
-      <div class="session-list">
-        <!-- Main session -->
-        <div class="session-item" data-session="main">
-          <span class="session-dot active"></span>
-          <div class="session-info">
-            <div class="session-name">main</div>
-            <div class="session-type">Telegram &middot; claude-opus-4</div>
-          </div>
-          <span class="session-status idle">Idle</span>
-          <span class="session-tokens">2,147 tok</span>
-        </div>
-        <div class="session-detail" id="detail-main">
-          <div class="session-detail-inner">
-            <div class="session-detail-row"><span class="label">Model</span><span class="value">claude-opus-4</span></div>
-            <div class="session-detail-row"><span class="label">Channel</span><span class="value">Telegram</span></div>
-            <div class="session-detail-row"><span class="label">Messages</span><span class="value">34 in / 32 out</span></div>
-            <div class="session-detail-row"><span class="label">Started</span><span class="value">14:28:11</span></div>
-            <div class="session-detail-row"><span class="label">Tools Used</span><span class="value">exec, memory, web</span></div>
-            <div class="timeline-bar">
-              <div class="timeline-segment" style="flex:3;background:var(--accent-green);opacity:0.6;"></div>
-              <div class="timeline-segment" style="flex:1;background:var(--accent-amber);"></div>
-              <div class="timeline-segment" style="flex:2;background:var(--accent-blue);"></div>
-              <div class="timeline-segment" style="flex:1;background:var(--accent-green);opacity:0.6;"></div>
-              <div class="timeline-segment" style="flex:1;background:var(--accent-amber);"></div>
-              <div class="timeline-segment" style="flex:4;background:var(--accent-green);opacity:0.3;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sub-agent 1 -->
-        <div class="session-item" data-session="sub1">
-          <span class="session-dot running"></span>
-          <div class="session-info">
-            <div class="session-name">sub-agent-1</div>
-            <div class="session-type">Isolated &middot; code-review</div>
-          </div>
-          <span class="session-status running">Running</span>
-          <span class="session-tokens">853 tok</span>
-        </div>
-        <div class="session-detail" id="detail-sub1">
-          <div class="session-detail-inner">
-            <div class="session-detail-row"><span class="label">Task</span><span class="value">Review PR #142</span></div>
-            <div class="session-detail-row"><span class="label">Model</span><span class="value">claude-opus-4</span></div>
-            <div class="session-detail-row"><span class="label">Spawned by</span><span class="value">main</span></div>
-            <div class="session-detail-row"><span class="label">Duration</span><span class="value">1m 42s</span></div>
-            <div class="timeline-bar">
-              <div class="timeline-segment" style="flex:1;background:var(--accent-blue);"></div>
-              <div class="timeline-segment" style="flex:2;background:var(--accent-amber);"></div>
-              <div class="timeline-segment" style="flex:1;background:var(--accent-blue);"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sub-agent 2 -->
-        <div class="session-item" data-session="sub2">
-          <span class="session-dot done"></span>
-          <div class="session-info">
-            <div class="session-name">sub-agent-2</div>
-            <div class="session-type">Isolated &middot; data-fetch</div>
-          </div>
-          <span class="session-status completed">Completed</span>
-          <span class="session-tokens">1,204 tok</span>
-        </div>
-        <div class="session-detail" id="detail-sub2">
-          <div class="session-detail-inner">
-            <div class="session-detail-row"><span class="label">Task</span><span class="value">Fetch API metrics</span></div>
-            <div class="session-detail-row"><span class="label">Model</span><span class="value">claude-haiku-4-5</span></div>
-            <div class="session-detail-row"><span class="label">Result</span><span class="value text-green">Success</span></div>
-            <div class="session-detail-row"><span class="label">Duration</span><span class="value">28s</span></div>
-            <div class="timeline-bar">
-              <div class="timeline-segment" style="flex:1;background:var(--accent-blue);"></div>
-              <div class="timeline-segment" style="flex:1;background:var(--accent-green);"></div>
-            </div>
-          </div>
-        </div>
+      <div class="session-list" id="sessionsList">
+        <div class="empty-state">loading...</div>
       </div>
     </div>
 
@@ -1133,37 +1285,10 @@ body::before {
       <div class="card" style="animation-delay: 210ms;">
         <div class="card-header">
           <div class="card-title"><span class="card-icon">&#x1F5A5;</span> Nodes</div>
-          <span class="card-count">1 online</span>
+          <span class="card-count" id="nodesCount">--</span>
         </div>
-        <div class="node-list">
-          <div class="node-item" data-node="boss">
-            <div class="node-icon bg-blue">&#x1F4BB;</div>
-            <div class="node-info">
-              <div class="node-name">Boss-MacBook</div>
-              <div class="node-meta">macOS 15.3 &middot; M3 Pro &middot; 18GB</div>
-            </div>
-            <div class="node-signal">
-              <div class="node-signal-bar" style="height:6px;"></div>
-              <div class="node-signal-bar" style="height:10px;"></div>
-              <div class="node-signal-bar" style="height:14px;"></div>
-              <div class="node-signal-bar" style="height:18px;"></div>
-            </div>
-          </div>
-          <div class="node-detail" id="detail-boss">
-            <div class="node-detail-inner">
-              <div class="session-detail-row"><span class="label">IP</span><span class="value">192.168.1.42</span></div>
-              <div class="session-detail-row"><span class="label">Last Ping</span><span class="value">12ms</span></div>
-              <div class="session-detail-row"><span class="label">CPU</span><span class="value">23%</span></div>
-              <div class="session-detail-row"><span class="label">Disk</span><span class="value">412GB free</span></div>
-              <div class="node-caps">
-                <span class="node-cap">exec</span>
-                <span class="node-cap">screenshot</span>
-                <span class="node-cap">browser</span>
-                <span class="node-cap">filesystem</span>
-                <span class="node-cap">clipboard</span>
-              </div>
-            </div>
-          </div>
+        <div class="node-list" id="nodesList">
+          <div class="empty-state">loading...</div>
         </div>
       </div>
 
@@ -1171,27 +1296,10 @@ body::before {
       <div class="card" style="animation-delay: 270ms;">
         <div class="card-header">
           <div class="card-title"><span class="card-icon">&#x1F4AC;</span> Channels</div>
-          <span class="card-count">2 connected</span>
+          <span class="card-count" id="channelsCount">--</span>
         </div>
-        <div class="channel-list">
-          <div class="channel-item">
-            <span class="channel-dot connected"></span>
-            <span class="channel-name">Telegram</span>
-            <span class="channel-status">Connected</span>
-            <span class="channel-count">12 chats</span>
-          </div>
-          <div class="channel-item">
-            <span class="channel-dot connected"></span>
-            <span class="channel-name">WhatsApp</span>
-            <span class="channel-status">Connected</span>
-            <span class="channel-count">3 chats</span>
-          </div>
-          <div class="channel-item">
-            <span class="channel-dot disconnected"></span>
-            <span class="channel-name">Discord</span>
-            <span class="channel-status" style="color:var(--accent-red);">Disconnected</span>
-            <span class="channel-count">&mdash;</span>
-          </div>
+        <div class="channel-list" id="channelsList">
+          <div class="empty-state">loading...</div>
         </div>
       </div>
     </div>
@@ -1203,62 +1311,10 @@ body::before {
     <div class="card" style="animation-delay: 330ms;">
       <div class="card-header">
         <div class="card-title"><span class="card-icon">&#x23F0;</span> Cron Jobs</div>
-        <span class="card-count">3 scheduled</span>
+        <span class="card-count" id="cronCount">--</span>
       </div>
-      <div class="cron-grid">
-        <!-- Cron 1 -->
-        <div class="cron-item" data-cron="pr-monitor">
-          <div class="cron-icon-wrap bg-green">&#x1F50D;</div>
-          <div class="cron-info">
-            <div class="cron-name">PR Monitor</div>
-            <div class="cron-schedule">*/15 * * * *</div>
-          </div>
-          <div class="cron-sparkline" id="spark-pr"></div>
-          <div class="cron-next" id="cron-next-1">4m 32s</div>
-        </div>
-        <div class="cron-detail" id="detail-pr-monitor">
-          <div class="cron-detail-inner">
-            <div class="session-detail-row"><span class="label">Last Run</span><span class="value text-green">Success &middot; 17:45:00</span></div>
-            <div class="session-detail-row"><span class="label">Duration</span><span class="value">8.3s</span></div>
-            <div class="session-detail-row"><span class="label">Result</span><span class="value">2 PRs checked, 0 action needed</span></div>
-          </div>
-        </div>
-
-        <!-- Cron 2 -->
-        <div class="cron-item" data-cron="daily-digest">
-          <div class="cron-icon-wrap bg-purple">&#x1F4E8;</div>
-          <div class="cron-info">
-            <div class="cron-name">Daily Digest</div>
-            <div class="cron-schedule">0 9 * * *</div>
-          </div>
-          <div class="cron-sparkline" id="spark-digest"></div>
-          <div class="cron-next">15h 8m</div>
-        </div>
-        <div class="cron-detail" id="detail-daily-digest">
-          <div class="cron-detail-inner">
-            <div class="session-detail-row"><span class="label">Last Run</span><span class="value text-green">Success &middot; 09:00:02</span></div>
-            <div class="session-detail-row"><span class="label">Duration</span><span class="value">12.1s</span></div>
-            <div class="session-detail-row"><span class="label">Result</span><span class="value">Digest sent to Telegram</span></div>
-          </div>
-        </div>
-
-        <!-- Cron 3 -->
-        <div class="cron-item" data-cron="health-check">
-          <div class="cron-icon-wrap bg-amber">&#x1F3E5;</div>
-          <div class="cron-info">
-            <div class="cron-name">Health Check</div>
-            <div class="cron-schedule">*/5 * * * *</div>
-          </div>
-          <div class="cron-sparkline" id="spark-health"></div>
-          <div class="cron-next" id="cron-next-3">1m 12s</div>
-        </div>
-        <div class="cron-detail" id="detail-health-check">
-          <div class="cron-detail-inner">
-            <div class="session-detail-row"><span class="label">Last Run</span><span class="value text-green">Success &middot; 17:50:00</span></div>
-            <div class="session-detail-row"><span class="label">Duration</span><span class="value">1.2s</span></div>
-            <div class="session-detail-row"><span class="label">Result</span><span class="value">All services healthy</span></div>
-          </div>
-        </div>
+      <div class="cron-grid" id="cronGrid">
+        <div class="empty-state">loading...</div>
       </div>
     </div>
 
@@ -1267,39 +1323,34 @@ body::before {
       <div class="card-header">
         <div class="card-title"><span class="card-icon">&#x1F4CA;</span> Token Budget</div>
       </div>
-      <div class="token-section">
-        <!-- Context window usage -->
+      <div class="token-section" id="tokenSection">
         <div class="token-meter-wrap">
           <div class="token-meter-header">
             <span class="token-meter-label">Context Window</span>
-            <span class="token-meter-value">4,204 / 200K</span>
+            <span class="token-meter-value" id="tokenContextValue">-- / --</span>
           </div>
           <div class="token-meter-bar">
-            <div class="token-meter-fill" style="width: 2.1%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));"></div>
+            <div class="token-meter-fill" id="tokenContextFill" style="width: 0%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));"></div>
           </div>
         </div>
-
-        <!-- Daily usage -->
         <div class="token-meter-wrap">
           <div class="token-meter-header">
             <span class="token-meter-label">Daily Usage</span>
-            <span class="token-meter-value">47,832 / 500K</span>
+            <span class="token-meter-value" id="tokenDailyValue">-- / --</span>
           </div>
           <div class="token-meter-bar">
-            <div class="token-meter-fill" style="width: 9.6%; background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));"></div>
+            <div class="token-meter-fill" id="tokenDailyFill" style="width: 0%; background: linear-gradient(90deg, var(--accent-green), var(--accent-blue));"></div>
           </div>
         </div>
-
-        <!-- Stats row -->
         <div class="token-stats">
           <div class="token-stat">
-            <div class="token-stat-label">Today&rsquo;s Cost</div>
-            <div class="token-stat-value text-green">$0.84</div>
-            <div class="token-stat-sub">~$25.20/mo</div>
+            <div class="token-stat-label">Total Tokens</div>
+            <div class="token-stat-value text-green" id="tokenTotalValue">--</div>
+            <div class="token-stat-sub" id="tokenTotalSub">across sessions</div>
           </div>
           <div class="token-stat">
             <div class="token-stat-label">Avg / Session</div>
-            <div class="token-stat-value text-blue">1,402</div>
+            <div class="token-stat-value text-blue" id="tokenAvgValue">--</div>
             <div class="token-stat-sub">tokens</div>
           </div>
         </div>
@@ -1311,7 +1362,7 @@ body::before {
   <div class="card full-width" style="animation-delay: 450ms;">
     <div class="card-header">
       <div class="card-title"><span class="card-icon">&#x26A1;</span> Activity Feed</div>
-      <span class="card-count" id="feedCount">10 events</span>
+      <span class="card-count" id="feedCount">--</span>
     </div>
     <div class="feed-filters">
       <button class="feed-filter active" data-filter="all">All</button>
@@ -1320,204 +1371,1237 @@ body::before {
       <button class="feed-filter" data-filter="cron">Cron</button>
       <button class="feed-filter" data-filter="system">System</button>
     </div>
-    <div class="feed-list" id="feedList">
-      <!-- Feed items populated by JS -->
-    </div>
+    <div class="feed-list" id="feedList"></div>
   </div>
 </div>
 
 <script>
 /* ═══════════════════════════════════════════════════
-   MOCK DATA & INTERACTIONS
+   OPENCLAW STATUS DASHBOARD — Phase 2
+   Real-time Gateway WebSocket Connection
    ═══════════════════════════════════════════════════ */
 
-// ── Clock ──
-function updateClock() {
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2, '0');
-  const m = String(now.getMinutes()).padStart(2, '0');
-  const s = String(now.getSeconds()).padStart(2, '0');
-  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+// ══════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = String(s ?? '');
+  return d.innerHTML;
 }
-setInterval(updateClock, 1000);
-updateClock();
 
-// ── Status Pulse cycling ──
-const states = [
-  { cls: 'thinking', text: 'Thinking', textCls: 'thinking-text' },
-  { cls: 'thinking', text: 'Thinking', textCls: 'thinking-text' },
-  { cls: 'streaming', text: 'Responding', textCls: 'streaming-text' },
-  { cls: '', text: 'Idle', textCls: 'idle-text' },
-  { cls: '', text: 'Idle', textCls: 'idle-text' },
-];
-let stateIdx = 0;
-const orb = document.getElementById('pulseOrb');
-const statusText = document.getElementById('pulseStatusText');
-
-function cycleState() {
-  const state = states[stateIdx];
-  orb.className = 'pulse-orb ' + state.cls;
-  statusText.className = 'pulse-status-value ' + state.textCls;
-  statusText.textContent = state.text;
-  stateIdx = (stateIdx + 1) % states.length;
+function fmtTokens(n) {
+  if (n == null || isNaN(n)) return '--';
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1) + 'k';
+  return String(n);
 }
-setInterval(cycleState, 5000);
 
-// Click orb to manually cycle
-orb.addEventListener('click', cycleState);
+function fmtNumber(n) {
+  if (n == null || isNaN(n)) return '--';
+  return n.toLocaleString();
+}
 
-// ── Expand/collapse panels ──
-document.querySelectorAll('.session-item').forEach(item => {
-  item.addEventListener('click', () => {
-    const key = item.dataset.session;
-    const detail = document.getElementById('detail-' + key);
-    if (detail) detail.classList.toggle('open');
-  });
-});
-document.querySelectorAll('.node-item').forEach(item => {
-  item.addEventListener('click', () => {
-    const key = item.dataset.node;
-    const detail = document.getElementById('detail-' + key);
-    if (detail) detail.classList.toggle('open');
-  });
-});
-document.querySelectorAll('.cron-item').forEach(item => {
-  item.addEventListener('click', () => {
-    const key = item.dataset.cron;
-    const detail = document.getElementById('detail-' + key);
-    if (detail) detail.classList.toggle('open');
-  });
-});
+function fmtCountdown(ms) {
+  if (!ms || ms <= 0) return 'now';
+  const sec = Math.floor(ms / 1000);
+  if (sec < 60) return sec + 's';
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  if (m < 60) return m + 'm ' + String(s).padStart(2, '0') + 's';
+  const h = Math.floor(m / 60);
+  return h + 'h ' + (m % 60) + 'm';
+}
 
-// ── Activity Feed ──
-const feedData = [
-  { time: '17:52', type: 'tool',    icon: '&#x1F6E0;', text: 'exec: <code>git push origin fix/cron-retry</code>',         detail: 'Push to remote completed in 2.1s, 3 commits pushed' },
-  { time: '17:51', type: 'system',  icon: '&#x1F9E0;', text: 'thinking: analyzing cron retry logic...',                     detail: 'Context: reviewing error handling in scheduler module' },
-  { time: '17:50', type: 'message', icon: '&#x1F4E9;', text: 'telegram: message from <strong>Boss</strong>',                detail: '"Can you check why the health check failed at 3am?"' },
-  { time: '17:49', type: 'tool',    icon: '&#x1F50D;', text: 'memory: searched <code>cron retry logic</code>',              detail: 'Found 3 relevant memories, loaded into context' },
-  { time: '17:48', type: 'cron',    icon: '&#x2705;',  text: 'cron: <strong>PR Monitor</strong> completed',                 detail: 'Checked 2 open PRs, no action needed. Duration: 8.3s' },
-  { time: '17:45', type: 'tool',    icon: '&#x1F6E0;', text: 'exec: <code>npm test -- --grep cron</code>',                  detail: '14 tests passed, 0 failed. Duration: 4.7s' },
-  { time: '17:43', type: 'message', icon: '&#x1F4AC;', text: 'whatsapp: message from <strong>DevTeam</strong> group',       detail: '"Deployment to staging looks good, proceeding with prod"' },
-  { time: '17:40', type: 'cron',    icon: '&#x2705;',  text: 'cron: <strong>Health Check</strong> completed',               detail: 'All 5 services healthy. Response times: 12-45ms' },
-  { time: '17:38', type: 'system',  icon: '&#x1F504;', text: 'sub-agent-2 completed: <strong>Fetch API metrics</strong>',   detail: 'Result: 1,204 tokens used, data stored to memory' },
-  { time: '17:35', type: 'system',  icon: '&#x1F680;', text: 'sub-agent-1 spawned: <strong>Review PR #142</strong>',        detail: 'Model: claude-opus-4, isolated session' },
-];
+function fmtTime(ts) {
+  if (!ts) return '--:--';
+  const d = new Date(ts);
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
 
-const feedColors = {
+function fmtTimeWithSec(ts) {
+  const d = ts ? new Date(ts) : new Date();
+  return String(d.getHours()).padStart(2, '0') + ':' +
+         String(d.getMinutes()).padStart(2, '0') + ':' +
+         String(d.getSeconds()).padStart(2, '0');
+}
+
+function fmtRelativeTime(ms) {
+  if (!ms) return '';
+  const diff = Date.now() - ms;
+  if (diff < 60000) return 'just now';
+  if (diff < 3600000) return Math.floor(diff / 60000) + 'm ago';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + 'h ago';
+  return Math.floor(diff / 86400000) + 'd ago';
+}
+
+
+// ══════════════════════════════════════════════════
+// GATEWAY CLIENT (simplified from openclaw gateway.ts)
+// ══════════════════════════════════════════════════
+class GatewayClient {
+  constructor(opts) {
+    this.opts = opts;
+    this.ws = null;
+    this.pending = new Map();
+    this.closed = false;
+    this.backoffMs = 800;
+    this.connectNonce = null;
+    this.connectSent = false;
+    this.connectTimer = null;
+    this.lastSeq = null;
+    this.pendingConnectError = null;
+    this.instanceId = crypto.randomUUID();
+  }
+
+  start() {
+    this.closed = false;
+    this.backoffMs = 800;
+    this._connect();
+  }
+
+  stop() {
+    this.closed = true;
+    if (this.connectTimer) { clearTimeout(this.connectTimer); this.connectTimer = null; }
+    if (this.ws) { this.ws.close(); this.ws = null; }
+    this.pendingConnectError = null;
+    this._flushPending(new Error('client stopped'));
+  }
+
+  get connected() {
+    return this.ws?.readyState === WebSocket.OPEN;
+  }
+
+  _connect() {
+    if (this.closed) return;
+    this.opts.onConnecting?.();
+    try {
+      this.ws = new WebSocket(this.opts.url);
+    } catch (e) {
+      this.opts.onClose?.({ code: 0, reason: e.message, error: { code: 'WS_ERROR', message: e.message } });
+      this._scheduleReconnect();
+      return;
+    }
+    this.ws.addEventListener('open', () => this._queueConnect());
+    this.ws.addEventListener('message', (ev) => this._handleMessage(String(ev.data ?? '')));
+    this.ws.addEventListener('close', (ev) => {
+      const err = this.pendingConnectError;
+      this.pendingConnectError = null;
+      this.ws = null;
+      this._flushPending(new Error('closed (' + ev.code + ')'));
+      this.opts.onClose?.({ code: ev.code, reason: ev.reason || '', error: err });
+      this._scheduleReconnect();
+    });
+    this.ws.addEventListener('error', () => {}); // close will fire
+  }
+
+  _scheduleReconnect() {
+    if (this.closed) return;
+    const delay = this.backoffMs;
+    this.backoffMs = Math.min(this.backoffMs * 1.7, 15000);
+    setTimeout(() => this._connect(), delay);
+  }
+
+  _flushPending(err) {
+    for (const [, p] of this.pending) p.reject(err);
+    this.pending.clear();
+  }
+
+  _queueConnect() {
+    this.connectNonce = null;
+    this.connectSent = false;
+    if (this.connectTimer) clearTimeout(this.connectTimer);
+    this.connectTimer = setTimeout(() => this._sendConnect(), 750);
+  }
+
+  _sendConnect() {
+    if (this.connectSent) return;
+    this.connectSent = true;
+    if (this.connectTimer) { clearTimeout(this.connectTimer); this.connectTimer = null; }
+
+    const auth = this.opts.token ? { token: this.opts.token } : undefined;
+    const params = {
+      minProtocol: 3,
+      maxProtocol: 3,
+      client: {
+        id: 'openclaw-status-dashboard',
+        version: '2.0',
+        platform: navigator.platform || 'web',
+        mode: 'webchat',
+        instanceId: this.instanceId,
+      },
+      role: 'operator',
+      scopes: ['operator.admin'],
+      caps: [],
+      auth,
+      userAgent: navigator.userAgent,
+      locale: navigator.language,
+    };
+
+    this.request('connect', params)
+      .then((hello) => {
+        this.backoffMs = 800;
+        this.opts.onHello?.(hello);
+      })
+      .catch((err) => {
+        this.pendingConnectError = {
+          code: err.gatewayCode || 'CONNECT_FAILED',
+          message: err.message || 'connect failed',
+        };
+        this.ws?.close(4008, 'connect failed');
+      });
+  }
+
+  _handleMessage(raw) {
+    let parsed;
+    try { parsed = JSON.parse(raw); } catch { return; }
+
+    if (parsed.type === 'event') {
+      if (parsed.event === 'connect.challenge') {
+        const nonce = parsed.payload?.nonce;
+        if (typeof nonce === 'string') {
+          this.connectNonce = nonce;
+          this._sendConnect();
+        }
+        return;
+      }
+      const seq = typeof parsed.seq === 'number' ? parsed.seq : null;
+      if (seq !== null) {
+        if (this.lastSeq !== null && seq > this.lastSeq + 1) {
+          console.warn('[gateway] event gap: expected', this.lastSeq + 1, 'got', seq);
+        }
+        this.lastSeq = seq;
+      }
+      try { this.opts.onEvent?.(parsed); } catch (e) { console.error('[gateway] event handler error:', e); }
+      return;
+    }
+
+    if (parsed.type === 'res') {
+      const p = this.pending.get(parsed.id);
+      if (!p) return;
+      this.pending.delete(parsed.id);
+      if (parsed.ok) {
+        p.resolve(parsed.payload);
+      } else {
+        const err = new Error(parsed.error?.message || 'request failed');
+        err.gatewayCode = parsed.error?.code || 'UNAVAILABLE';
+        p.reject(err);
+      }
+    }
+  }
+
+  request(method, params) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      return Promise.reject(new Error('not connected'));
+    }
+    const id = crypto.randomUUID();
+    return new Promise((resolve, reject) => {
+      this.pending.set(id, { resolve, reject });
+      this.ws.send(JSON.stringify({ type: 'req', id, method, params }));
+    });
+  }
+}
+
+
+// ══════════════════════════════════════════════════
+// APPLICATION STATE
+// ══════════════════════════════════════════════════
+const state = {
+  mode: 'demo', // 'demo' | 'live'
+  connection: 'disconnected', // 'disconnected' | 'connecting' | 'connected' | 'error'
+  error: null,
+  client: null,
+  hello: null,
+
+  // Gateway data (null = not loaded yet)
+  sessions: null,
+  nodes: null,
+  cronStatus: null,
+  cronJobs: null,
+  agents: null,
+  presence: null,
+
+  // Event log
+  feedEvents: [],
+  feedFilter: 'all',
+
+  // Cron countdown timers
+  cronTimers: {},
+};
+
+
+// ══════════════════════════════════════════════════
+// MOCK DATA (Demo mode fallback)
+// ══════════════════════════════════════════════════
+const MOCK = {
+  sessions: [
+    { key: 'main', label: 'main', agentId: 'default', model: 'claude-opus-4', status: 'idle', totalTokens: 2147, channel: 'Telegram', startedAt: Date.now() - 3600000 * 3.4, messagesIn: 34, messagesOut: 32 },
+    { key: 'sub-agent-1', label: 'sub-agent-1', agentId: 'code-review', model: 'claude-opus-4', status: 'running', totalTokens: 853, channel: 'Isolated', startedAt: Date.now() - 102000, parentKey: 'main', task: 'Review PR #142' },
+    { key: 'sub-agent-2', label: 'sub-agent-2', agentId: 'data-fetch', model: 'claude-haiku-4-5', status: 'completed', totalTokens: 1204, channel: 'Isolated', startedAt: Date.now() - 600000, parentKey: 'main', task: 'Fetch API metrics' },
+  ],
+  nodes: [
+    { id: 'boss-mac', name: 'Boss-MacBook', os: 'macOS 15.3', arch: 'M3 Pro', mem: '18GB', capabilities: ['exec', 'screenshot', 'browser', 'filesystem', 'clipboard'], ip: '192.168.1.42', latency: 12, cpu: 23, diskFree: '412GB' },
+  ],
+  cronJobs: [
+    { id: 'pr-monitor', label: 'PR Monitor', schedule: '*/15 * * * *', enabled: true, nextRunAtMs: Date.now() + 272000, lastRunOk: true, lastRunAtMs: Date.now() - 420000, lastDuration: 8.3, lastResult: '2 PRs checked, 0 action needed', sparkline: [{v:8,ok:1},{v:7,ok:1},{v:9,ok:1},{v:8,ok:1},{v:12,ok:0},{v:7,ok:1},{v:8,ok:1},{v:9,ok:1}] },
+    { id: 'daily-digest', label: 'Daily Digest', schedule: '0 9 * * *', enabled: true, nextRunAtMs: Date.now() + 54480000, lastRunOk: true, lastRunAtMs: Date.now() - 31800000, lastDuration: 12.1, lastResult: 'Digest sent to Telegram', sparkline: [{v:12,ok:1},{v:11,ok:1},{v:13,ok:1},{v:12,ok:1},{v:14,ok:1},{v:11,ok:1},{v:12,ok:1}] },
+    { id: 'health-check', label: 'Health Check', schedule: '*/5 * * * *', enabled: true, nextRunAtMs: Date.now() + 72000, lastRunOk: true, lastRunAtMs: Date.now() - 120000, lastDuration: 1.2, lastResult: 'All services healthy', sparkline: [{v:1,ok:1},{v:1,ok:1},{v:2,ok:1},{v:1,ok:1},{v:1,ok:1},{v:3,ok:0},{v:1,ok:1},{v:1,ok:1},{v:1,ok:1},{v:1,ok:1}] },
+  ],
+  channels: [
+    { name: 'Telegram', connected: true, chats: 12 },
+    { name: 'WhatsApp', connected: true, chats: 3 },
+    { name: 'Discord', connected: false, chats: 0 },
+  ],
+  feedEvents: [
+    { ts: Date.now() - 60000,   type: 'tool',    text: 'exec: git push origin fix/cron-retry',           detail: 'Push to remote completed in 2.1s, 3 commits pushed' },
+    { ts: Date.now() - 120000,  type: 'system',  text: 'thinking: analyzing cron retry logic...',         detail: 'Context: reviewing error handling in scheduler module' },
+    { ts: Date.now() - 180000,  type: 'message', text: 'telegram: message from Boss',                     detail: '"Can you check why the health check failed at 3am?"' },
+    { ts: Date.now() - 240000,  type: 'tool',    text: 'memory: searched "cron retry logic"',             detail: 'Found 3 relevant memories, loaded into context' },
+    { ts: Date.now() - 300000,  type: 'cron',    text: 'cron: PR Monitor completed',                      detail: 'Checked 2 open PRs, no action needed. Duration: 8.3s' },
+    { ts: Date.now() - 420000,  type: 'tool',    text: 'exec: npm test -- --grep cron',                   detail: '14 tests passed, 0 failed. Duration: 4.7s' },
+    { ts: Date.now() - 540000,  type: 'message', text: 'whatsapp: message from DevTeam group',            detail: '"Deployment to staging looks good, proceeding with prod"' },
+    { ts: Date.now() - 720000,  type: 'cron',    text: 'cron: Health Check completed',                    detail: 'All 5 services healthy. Response times: 12-45ms' },
+    { ts: Date.now() - 840000,  type: 'system',  text: 'sub-agent-2 completed: Fetch API metrics',        detail: 'Result: 1,204 tokens used, data stored to memory' },
+    { ts: Date.now() - 1020000, type: 'system',  text: 'sub-agent-1 spawned: Review PR #142',             detail: 'Model: claude-opus-4, isolated session' },
+  ],
+};
+
+const FEED_ICONS = {
+  tool:    '&#x1F6E0;',
+  message: '&#x1F4E9;',
+  cron:    '&#x2705;',
+  system:  '&#x1F9E0;',
+  agent:   '&#x1F916;',
+  error:   '&#x26A0;',
+  chat:    '&#x1F4AC;',
+};
+
+const FEED_COLORS = {
   tool:    { bg: 'bg-blue',   text: 'text-blue' },
   message: { bg: 'bg-green',  text: 'text-green' },
   cron:    { bg: 'bg-amber',  text: 'text-amber' },
   system:  { bg: 'bg-purple', text: 'text-purple' },
+  agent:   { bg: 'bg-blue',   text: 'text-blue' },
+  error:   { bg: 'bg-red',    text: 'text-red' },
+  chat:    { bg: 'bg-green',  text: 'text-green' },
 };
 
-function renderFeed(filter) {
-  const list = document.getElementById('feedList');
-  const filtered = filter === 'all' ? feedData : feedData.filter(d => d.type === filter);
-  document.getElementById('feedCount').textContent = filtered.length + ' events';
+const CRON_ICONS = ['&#x1F50D;', '&#x1F4E8;', '&#x1F3E5;', '&#x1F504;', '&#x1F4CA;', '&#x1F6E0;', '&#x23F0;', '&#x1F4CB;'];
+const CRON_COLORS = ['bg-green', 'bg-purple', 'bg-amber', 'bg-blue', 'bg-green', 'bg-blue', 'bg-amber', 'bg-purple'];
 
-  list.innerHTML = filtered.map((d, i) => {
-    const c = feedColors[d.type];
+
+// ══════════════════════════════════════════════════
+// SETTINGS (localStorage)
+// ══════════════════════════════════════════════════
+const SETTINGS_KEY = 'openclaw-status-settings';
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch {}
+  return { gatewayUrl: '', authToken: '', autoConnect: false };
+}
+
+function saveSettings(s) {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch {}
+}
+
+const settings = loadSettings();
+
+
+// ══════════════════════════════════════════════════
+// CONNECTION MANAGEMENT
+// ══════════════════════════════════════════════════
+function doConnect() {
+  const url = document.getElementById('gatewayUrlInput').value.trim();
+  const token = document.getElementById('authTokenInput').value.trim();
+
+  if (!url) {
+    showConnError('Gateway URL is required');
+    return;
+  }
+
+  // Save settings
+  settings.gatewayUrl = url;
+  settings.authToken = token;
+  settings.autoConnect = true;
+  saveSettings(settings);
+
+  // Clean up previous client
+  if (state.client) { state.client.stop(); state.client = null; }
+
+  state.mode = 'live';
+  state.connection = 'connecting';
+  state.error = null;
+  state.feedEvents = [];
+  hideConnError();
+  renderConnectionStatus();
+
+  state.client = new GatewayClient({
+    url,
+    token: token || undefined,
+    onConnecting: () => {
+      state.connection = 'connecting';
+      renderConnectionStatus();
+    },
+    onHello: (hello) => {
+      state.connection = 'connected';
+      state.hello = hello;
+      state.error = null;
+
+      // Apply snapshot data
+      if (hello.snapshot) {
+        if (hello.snapshot.presence) state.presence = hello.snapshot.presence;
+        if (hello.snapshot.health) state.health = hello.snapshot.health;
+      }
+
+      renderConnectionStatus();
+      addFeedEvent('system', 'Connected to gateway' + (hello.server?.version ? ' v' + hello.server.version : ''));
+
+      // Load all data
+      loadAllData();
+    },
+    onClose: ({ code, reason, error }) => {
+      const wasConnected = state.connection === 'connected';
+      state.connection = state.client?.closed ? 'disconnected' : 'connecting';
+
+      if (error?.message) {
+        state.error = error.message;
+        if (error.code === 'AUTH_FAILED' || error.code === 'UNAUTHORIZED') {
+          state.connection = 'error';
+          showConnError('Authentication failed: ' + error.message);
+        }
+      } else if (code !== 1000 && code !== 1012) {
+        state.error = 'Disconnected (' + code + ')' + (reason ? ': ' + reason : '');
+      }
+
+      if (wasConnected) {
+        addFeedEvent('error', 'Gateway disconnected' + (state.error ? ': ' + state.error : ''));
+      }
+      renderConnectionStatus();
+    },
+    onEvent: (evt) => {
+      handleGatewayEvent(evt);
+    },
+  });
+
+  state.client.start();
+
+  // Update button visibility
+  document.getElementById('connectBtn').style.display = 'none';
+  document.getElementById('disconnectBtn').style.display = '';
+}
+
+function doDisconnect() {
+  if (state.client) { state.client.stop(); state.client = null; }
+  state.connection = 'disconnected';
+  state.mode = 'demo';
+  state.error = null;
+  state.hello = null;
+  state.sessions = null;
+  state.nodes = null;
+  state.cronStatus = null;
+  state.cronJobs = null;
+  state.agents = null;
+  state.presence = null;
+
+  settings.autoConnect = false;
+  saveSettings(settings);
+
+  document.getElementById('connectBtn').style.display = '';
+  document.getElementById('disconnectBtn').style.display = 'none';
+  hideConnError();
+  renderAll();
+}
+
+function enterDemoMode() {
+  if (state.client) { state.client.stop(); state.client = null; }
+  state.mode = 'demo';
+  state.connection = 'disconnected';
+  state.error = null;
+  state.hello = null;
+  state.sessions = null;
+  state.nodes = null;
+  state.cronStatus = null;
+  state.cronJobs = null;
+
+  settings.autoConnect = false;
+  saveSettings(settings);
+
+  document.getElementById('connectBtn').style.display = '';
+  document.getElementById('disconnectBtn').style.display = 'none';
+
+  // Close settings panel
+  document.getElementById('connectionSettings').classList.remove('open');
+
+  hideConnError();
+  state.feedEvents = [...MOCK.feedEvents];
+  renderAll();
+}
+
+function showConnError(msg) {
+  const el = document.getElementById('connError');
+  el.textContent = msg;
+  el.classList.add('visible');
+}
+
+function hideConnError() {
+  document.getElementById('connError').classList.remove('visible');
+}
+
+
+// ══════════════════════════════════════════════════
+// DATA LOADING
+// ══════════════════════════════════════════════════
+async function loadAllData() {
+  if (!state.client || state.connection !== 'connected') return;
+
+  const results = await Promise.allSettled([
+    loadSessions(),
+    loadNodes(),
+    loadCronData(),
+    loadAgents(),
+  ]);
+
+  // Log any errors
+  results.forEach((r, i) => {
+    if (r.status === 'rejected') {
+      const names = ['sessions', 'nodes', 'cron', 'agents'];
+      console.warn('[data] Failed to load ' + names[i] + ':', r.reason?.message);
+    }
+  });
+}
+
+async function loadSessions() {
+  if (!state.client) return;
+  const res = await state.client.request('sessions.list', {
+    includeGlobal: false,
+    includeUnknown: false,
+    limit: 50,
+  });
+  state.sessions = res;
+  renderSessions();
+  renderStatCards();
+  renderPulse();
+  renderTokenBudget();
+}
+
+async function loadNodes() {
+  if (!state.client) return;
+  const res = await state.client.request('node.list', {});
+  state.nodes = Array.isArray(res?.nodes) ? res.nodes : (Array.isArray(res) ? res : []);
+  renderNodes();
+  renderStatCards();
+}
+
+async function loadCronData() {
+  if (!state.client) return;
+  const [statusRes, listRes] = await Promise.all([
+    state.client.request('cron.status', {}).catch(() => null),
+    state.client.request('cron.list', { limit: 50, offset: 0 }).catch(() => null),
+  ]);
+  if (statusRes) state.cronStatus = statusRes;
+  if (listRes) state.cronJobs = listRes;
+  renderCronJobs();
+  renderStatCards();
+}
+
+async function loadAgents() {
+  if (!state.client) return;
+  const res = await state.client.request('agents.list', {});
+  state.agents = res;
+  renderPulse();
+}
+
+
+// ══════════════════════════════════════════════════
+// EVENT HANDLING
+// ══════════════════════════════════════════════════
+function handleGatewayEvent(evt) {
+  // Add to feed
+  const evtName = evt.event;
+
+  if (evtName === 'presence') {
+    if (evt.payload?.presence) {
+      state.presence = evt.payload.presence;
+    }
+    return;
+  }
+
+  if (evtName === 'chat') {
+    const p = evt.payload;
+    if (p?.type === 'message' || p?.type === 'text') {
+      addFeedEvent('chat', 'Chat: ' + (p.sessionKey || '') + ' — ' + truncate(p.text || p.content || '', 80));
+    } else if (p?.type === 'tool_use' || p?.type === 'tool') {
+      addFeedEvent('tool', 'Tool: ' + (p.name || p.toolName || 'unknown') + (p.sessionKey ? ' (' + p.sessionKey + ')' : ''));
+    } else if (p?.type === 'final' || p?.type === 'done') {
+      addFeedEvent('system', 'Chat completed: ' + (p.sessionKey || ''));
+      // Refresh sessions on chat completion
+      loadSessions().catch(() => {});
+    }
+    return;
+  }
+
+  if (evtName === 'agent') {
+    const p = evt.payload;
+    addFeedEvent('agent', 'Agent: ' + (p?.event || p?.type || evtName) + (p?.sessionKey ? ' (' + p.sessionKey + ')' : ''));
+    return;
+  }
+
+  if (evtName === 'cron') {
+    addFeedEvent('cron', 'Cron event');
+    loadCronData().catch(() => {});
+    return;
+  }
+
+  if (evtName === 'exec.approval.requested') {
+    const p = evt.payload;
+    addFeedEvent('tool', 'Exec approval requested: ' + (p?.command || p?.label || 'unknown'));
+    return;
+  }
+
+  if (evtName === 'exec.approval.resolved') {
+    const p = evt.payload;
+    addFeedEvent('system', 'Exec approval ' + (p?.approved ? 'approved' : 'rejected'));
+    return;
+  }
+
+  // Generic event
+  if (evtName !== 'connect.challenge') {
+    addFeedEvent('system', 'Event: ' + evtName);
+  }
+}
+
+function truncate(s, max) {
+  s = String(s);
+  return s.length > max ? s.slice(0, max) + '...' : s;
+}
+
+function addFeedEvent(type, text, detail) {
+  state.feedEvents.unshift({
+    ts: Date.now(),
+    type: type,
+    text: text,
+    detail: detail || '',
+  });
+  // Limit to 100 events
+  if (state.feedEvents.length > 100) state.feedEvents.length = 100;
+  renderFeed();
+}
+
+
+// ══════════════════════════════════════════════════
+// RENDERING
+// ══════════════════════════════════════════════════
+function renderAll() {
+  renderConnectionStatus();
+  renderStatCards();
+  renderPulse();
+  renderSessions();
+  renderNodes();
+  renderChannels();
+  renderCronJobs();
+  renderTokenBudget();
+  renderFeed();
+}
+
+// -- Connection Status --
+function renderConnectionStatus() {
+  const dot = document.getElementById('connectionDot');
+  const label = document.getElementById('connectionLabel');
+  const hint = document.getElementById('connectionErrorHint');
+  const badge = document.getElementById('headerBadge');
+  const badgeText = document.getElementById('headerBadgeText');
+  const uptime = document.getElementById('uptimeText');
+  const connInfo = document.getElementById('connInfo');
+
+  // Connection bar
+  dot.className = 'connection-dot';
+  hint.textContent = '';
+
+  if (state.mode === 'demo') {
+    dot.classList.add('demo');
+    label.textContent = 'Demo Mode';
+    badge.className = 'header-badge demo';
+    badgeText.textContent = 'Demo';
+    uptime.textContent = 'demo mode';
+    connInfo.textContent = '';
+  } else if (state.connection === 'connected') {
+    dot.classList.add('connected');
+    label.textContent = 'Connected';
+    badge.className = 'header-badge live';
+    badgeText.textContent = 'Live';
+    const ver = state.hello?.server?.version;
+    uptime.textContent = ver ? 'gateway v' + ver : 'connected';
+    connInfo.textContent = 'Connected to ' + (settings.gatewayUrl || '');
+  } else if (state.connection === 'connecting') {
+    dot.classList.add('connecting');
+    label.textContent = 'Connecting...';
+    badge.className = 'header-badge offline';
+    badgeText.textContent = 'Connecting';
+    uptime.textContent = 'connecting...';
+    connInfo.textContent = 'Connecting to ' + (settings.gatewayUrl || '');
+  } else if (state.connection === 'error') {
+    dot.classList.add('error');
+    label.textContent = 'Connection Error';
+    hint.textContent = state.error ? truncate(state.error, 60) : '';
+    badge.className = 'header-badge error';
+    badgeText.textContent = 'Error';
+    uptime.textContent = 'error';
+    connInfo.textContent = '';
+  } else {
+    dot.classList.add('disconnected');
+    label.textContent = 'Disconnected';
+    badge.className = 'header-badge offline';
+    badgeText.textContent = 'Offline';
+    uptime.textContent = state.error || 'disconnected';
+    connInfo.textContent = '';
+  }
+}
+
+// -- Stat Cards --
+function renderStatCards() {
+  const sessions = getSessionsData();
+  const nodes = getNodesData();
+  const cron = getCronData();
+
+  // Sessions stat
+  document.getElementById('statSessionsValue').textContent = sessions.length;
+  const mainCount = sessions.filter(s => !s.parentKey && !s.parentSessionKey).length;
+  const subCount = sessions.length - mainCount;
+  document.getElementById('statSessionsSub').textContent =
+    sessions.length === 0 ? 'none' :
+    (mainCount > 0 ? mainCount + ' main' : '') + (subCount > 0 ? (mainCount > 0 ? ' + ' : '') + subCount + ' sub-agent' + (subCount > 1 ? 's' : '') : '');
+
+  // Nodes stat
+  document.getElementById('statNodesValue').textContent = nodes.length;
+  document.getElementById('statNodesSub').textContent =
+    nodes.length === 0 ? 'none' : nodes.map(n => n.name || n.hostname || n.id || 'node').slice(0, 2).join(', ');
+
+  // Cron stat
+  document.getElementById('statCronValue').textContent = cron.length;
+  const nextJob = cron.filter(j => j.nextRunAtMs).sort((a, b) => a.nextRunAtMs - b.nextRunAtMs)[0];
+  document.getElementById('statCronSub').textContent =
+    cron.length === 0 ? 'none' :
+    nextJob ? 'next in ' + fmtCountdown(nextJob.nextRunAtMs - Date.now()) : cron.length + ' scheduled';
+}
+
+// -- Pulse Orb --
+function renderPulse() {
+  const orb = document.getElementById('pulseOrb');
+  const text = document.getElementById('pulseStatusText');
+  const model = document.getElementById('pulseModel');
+  const container = document.getElementById('pulseContainer');
+
+  const sessions = getSessionsData();
+
+  // Determine agent state from sessions
+  const hasRunning = sessions.some(s =>
+    s.status === 'running' || s.status === 'busy' || s.status === 'thinking' || s.status === 'active'
+  );
+  const hasStreaming = sessions.some(s => s.status === 'streaming' || s.status === 'responding');
+
+  if (state.mode === 'live' && state.connection !== 'connected') {
+    orb.className = 'pulse-orb disconnected';
+    text.className = 'pulse-status-value disconnected-text';
+    text.textContent = 'Disconnected';
+    model.textContent = '--';
+  } else if (hasStreaming) {
+    orb.className = 'pulse-orb streaming';
+    text.className = 'pulse-status-value streaming-text';
+    text.textContent = 'Responding';
+  } else if (hasRunning) {
+    orb.className = 'pulse-orb thinking';
+    text.className = 'pulse-status-value thinking-text';
+    text.textContent = 'Thinking';
+  } else {
+    orb.className = 'pulse-orb';
+    text.className = 'pulse-status-value idle-text';
+    text.textContent = 'Idle';
+  }
+
+  // Model info
+  const mainSession = sessions.find(s => s.key === 'main' || s.label === 'main') || sessions[0];
+  const agentModel = mainSession?.model || mainSession?.modelId || state.agents?.defaultId || '--';
+  model.textContent = agentModel;
+
+  // Orbiting sub-agent dots - remove old orbit tracks
+  container.querySelectorAll('.orbit-track').forEach(el => el.remove());
+
+  // Add orbit dots for sub-agent sessions
+  const subSessions = sessions.filter(s => s.parentKey || s.parentSessionKey || (s.key !== 'main' && s.label !== 'main'));
+  subSessions.slice(0, 4).forEach((s, i) => {
+    const track = document.createElement('div');
+    track.className = 'orbit-track';
+    track.style.animationDuration = (8 + i * 3) + 's';
+    if (i % 2) track.style.animationDirection = 'reverse';
+    if (i > 0) track.style.inset = (-10 - i * 12) + 'px';
+
+    const dot = document.createElement('div');
+    const isActive = s.status === 'running' || s.status === 'busy' || s.status === 'active' || s.status === 'thinking';
+    dot.className = 'orbit-dot ' + (isActive ? 'running' : 'completed');
+    dot.title = (s.label || s.key) + ' (' + (s.status || 'unknown') + ')';
+    track.appendChild(dot);
+    container.appendChild(track);
+  });
+}
+
+// -- Sessions --
+function renderSessions() {
+  const sessions = getSessionsData();
+  const list = document.getElementById('sessionsList');
+  const count = document.getElementById('sessionsCount');
+
+  count.textContent = sessions.length + ' active';
+
+  if (!sessions.length) {
+    list.innerHTML = '<div class="empty-state">No active sessions</div>';
+    return;
+  }
+
+  list.innerHTML = sessions.map(s => {
+    const key = esc(s.key || s.label || 'unknown');
+    const name = esc(s.label || s.key || 'unknown');
+    const statusRaw = (s.status || 'idle').toLowerCase();
+    const dotClass = statusRaw === 'running' || statusRaw === 'busy' || statusRaw === 'active' || statusRaw === 'thinking' ? 'running' :
+                     statusRaw === 'completed' || statusRaw === 'done' ? 'done' : 'active';
+    const statusClass = dotClass === 'running' ? 'running' : dotClass === 'done' ? 'completed' : 'idle';
+    const statusText = statusRaw === 'busy' ? 'Running' : statusRaw.charAt(0).toUpperCase() + statusRaw.slice(1);
+    const typeInfo = esc((s.channel || s.agentId || '') + (s.model || s.modelId ? ' \u00b7 ' + (s.model || s.modelId) : ''));
+    const tokens = s.totalTokens != null ? fmtNumber(s.totalTokens) + ' tok' : '--';
+
     return `
-      <div class="feed-item" data-feed-idx="${i}" style="animation-delay:${i * 40}ms;">
-        <span class="feed-time">${d.time}</span>
-        <span class="feed-badge ${c.bg} ${c.text}">${d.icon}</span>
-        <div class="feed-content">
-          <div class="feed-text">${d.text}</div>
-          <div class="feed-detail" id="feed-detail-${filter}-${i}">${d.detail}</div>
+      <div class="session-item" data-session="${key}">
+        <span class="session-dot ${dotClass}"></span>
+        <div class="session-info">
+          <div class="session-name">${name}</div>
+          <div class="session-type">${typeInfo}</div>
+        </div>
+        <span class="session-status ${statusClass}">${statusText}</span>
+        <span class="session-tokens">${tokens}</span>
+      </div>
+      <div class="session-detail" id="detail-${key}">
+        <div class="session-detail-inner">
+          ${s.model || s.modelId ? '<div class="session-detail-row"><span class="label">Model</span><span class="value">' + esc(s.model || s.modelId) + '</span></div>' : ''}
+          ${s.channel ? '<div class="session-detail-row"><span class="label">Channel</span><span class="value">' + esc(s.channel) + '</span></div>' : ''}
+          ${s.agentId ? '<div class="session-detail-row"><span class="label">Agent</span><span class="value">' + esc(s.agentId) + '</span></div>' : ''}
+          ${s.task ? '<div class="session-detail-row"><span class="label">Task</span><span class="value">' + esc(s.task) + '</span></div>' : ''}
+          ${s.parentKey || s.parentSessionKey ? '<div class="session-detail-row"><span class="label">Parent</span><span class="value">' + esc(s.parentKey || s.parentSessionKey) + '</span></div>' : ''}
+          ${s.startedAt || s.createdAtMs ? '<div class="session-detail-row"><span class="label">Started</span><span class="value">' + fmtTimeWithSec(s.startedAt || s.createdAtMs) + '</span></div>' : ''}
+          ${s.lastActivityAtMs ? '<div class="session-detail-row"><span class="label">Last Activity</span><span class="value">' + fmtRelativeTime(s.lastActivityAtMs) + '</span></div>' : ''}
+          ${s.messagesIn != null ? '<div class="session-detail-row"><span class="label">Messages</span><span class="value">' + s.messagesIn + ' in / ' + (s.messagesOut || 0) + ' out</span></div>' : ''}
+          ${s.totalTokens != null ? '<div class="session-detail-row"><span class="label">Tokens</span><span class="value">' + fmtNumber(s.totalTokens) + '</span></div>' : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// -- Nodes --
+function renderNodes() {
+  const nodes = getNodesData();
+  const list = document.getElementById('nodesList');
+  const count = document.getElementById('nodesCount');
+
+  count.textContent = nodes.length + ' online';
+
+  if (!nodes.length) {
+    list.innerHTML = '<div class="empty-state">No nodes connected</div>';
+    return;
+  }
+
+  list.innerHTML = nodes.map(n => {
+    const id = esc(n.id || n.nodeId || n.name || 'unknown');
+    const name = esc(n.name || n.hostname || n.id || 'Node');
+    const meta = esc([n.os, n.arch, n.mem].filter(Boolean).join(' \u00b7 ') || n.platform || '');
+    const caps = Array.isArray(n.capabilities) ? n.capabilities : (Array.isArray(n.caps) ? n.caps : []);
+    const bars = 4; // signal strength (placeholder)
+
+    return `
+      <div class="node-item" data-node="${id}">
+        <div class="node-icon bg-blue">&#x1F4BB;</div>
+        <div class="node-info">
+          <div class="node-name">${name}</div>
+          <div class="node-meta">${meta}</div>
+        </div>
+        <div class="node-signal">
+          ${Array.from({length: 4}, (_, i) =>
+            '<div class="node-signal-bar" style="height:' + (6 + i * 4) + 'px;' + (i >= bars ? 'opacity:0.2;' : '') + '"></div>'
+          ).join('')}
         </div>
       </div>
-    `;
+      <div class="node-detail" id="detail-${id}">
+        <div class="node-detail-inner">
+          ${n.ip ? '<div class="session-detail-row"><span class="label">IP</span><span class="value">' + esc(n.ip) + '</span></div>' : ''}
+          ${n.latency != null ? '<div class="session-detail-row"><span class="label">Latency</span><span class="value">' + n.latency + 'ms</span></div>' : ''}
+          ${n.cpu != null ? '<div class="session-detail-row"><span class="label">CPU</span><span class="value">' + n.cpu + '%</span></div>' : ''}
+          ${n.diskFree ? '<div class="session-detail-row"><span class="label">Disk</span><span class="value">' + esc(n.diskFree) + ' free</span></div>' : ''}
+          ${n.version ? '<div class="session-detail-row"><span class="label">Version</span><span class="value">' + esc(n.version) + '</span></div>' : ''}
+          ${caps.length > 0 ? '<div class="node-caps">' + caps.map(c => '<span class="node-cap">' + esc(c) + '</span>').join('') + '</div>' : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// -- Channels --
+function renderChannels() {
+  const channels = getChannelsData();
+  const list = document.getElementById('channelsList');
+  const count = document.getElementById('channelsCount');
+
+  const connectedCount = channels.filter(c => c.connected).length;
+  count.textContent = connectedCount + ' connected';
+
+  if (!channels.length) {
+    list.innerHTML = '<div class="empty-state">No channels configured</div>';
+    return;
+  }
+
+  list.innerHTML = channels.map(c => `
+    <div class="channel-item">
+      <span class="channel-dot ${c.connected ? 'connected' : 'disconnected'}"></span>
+      <span class="channel-name">${esc(c.name)}</span>
+      <span class="channel-status" ${!c.connected ? 'style="color:var(--accent-red);"' : ''}>${c.connected ? 'Connected' : 'Disconnected'}</span>
+      <span class="channel-count">${c.connected && c.chats > 0 ? c.chats + ' chats' : '\u2014'}</span>
+    </div>
+  `).join('');
+}
+
+// -- Cron Jobs --
+function renderCronJobs() {
+  const jobs = getCronData();
+  const grid = document.getElementById('cronGrid');
+  const count = document.getElementById('cronCount');
+
+  count.textContent = jobs.length + ' scheduled';
+
+  if (!jobs.length) {
+    grid.innerHTML = '<div class="empty-state">No cron jobs</div>';
+    return;
+  }
+
+  grid.innerHTML = jobs.map((j, idx) => {
+    const id = esc(j.id || 'job-' + idx);
+    const name = esc(j.label || j.name || j.id || 'Job');
+    const schedule = esc(j.schedule || j.cron || '--');
+    const icon = CRON_ICONS[idx % CRON_ICONS.length];
+    const color = CRON_COLORS[idx % CRON_COLORS.length];
+    const nextMs = j.nextRunAtMs ? j.nextRunAtMs - Date.now() : null;
+    const nextText = nextMs != null ? fmtCountdown(nextMs) : '--';
+
+    return `
+      <div class="cron-item" data-cron="${id}">
+        <div class="cron-icon-wrap ${color}">${icon}</div>
+        <div class="cron-info">
+          <div class="cron-name">${name}</div>
+          <div class="cron-schedule">${schedule}</div>
+        </div>
+        <div class="cron-sparkline" id="spark-${id}"></div>
+        <div class="cron-next" data-next-at="${j.nextRunAtMs || ''}">${nextText}</div>
+      </div>
+      <div class="cron-detail" id="detail-${id}">
+        <div class="cron-detail-inner">
+          ${j.lastRunAtMs ? '<div class="session-detail-row"><span class="label">Last Run</span><span class="value ' + (j.lastRunOk !== false ? 'text-green' : 'text-red') + '">' + (j.lastRunOk !== false ? 'Success' : 'Failed') + ' \u00b7 ' + fmtTime(j.lastRunAtMs) + '</span></div>' : ''}
+          ${j.lastDuration != null ? '<div class="session-detail-row"><span class="label">Duration</span><span class="value">' + j.lastDuration + 's</span></div>' : ''}
+          ${j.lastResult ? '<div class="session-detail-row"><span class="label">Result</span><span class="value">' + esc(j.lastResult) + '</span></div>' : ''}
+          ${j.enabled != null ? '<div class="session-detail-row"><span class="label">Status</span><span class="value">' + (j.enabled ? 'Enabled' : 'Disabled') + '</span></div>' : ''}
+        </div>
+      </div>`;
   }).join('');
 
-  // Rebind click handlers
+  // Render sparklines
+  jobs.forEach((j, idx) => {
+    const id = j.id || 'job-' + idx;
+    if (j.sparkline) renderSparkline('spark-' + id, j.sparkline);
+  });
+}
+
+// -- Token Budget --
+function renderTokenBudget() {
+  const sessions = getSessionsData();
+  const totalTokens = sessions.reduce((sum, s) => sum + (s.totalTokens || 0), 0);
+  const avgTokens = sessions.length > 0 ? Math.round(totalTokens / sessions.length) : 0;
+
+  // Context window
+  const contextMax = 200000;
+  const contextUsed = totalTokens;
+  const contextPct = Math.min(100, (contextUsed / contextMax) * 100);
+  document.getElementById('tokenContextValue').textContent = fmtTokens(contextUsed) + ' / ' + fmtTokens(contextMax);
+  document.getElementById('tokenContextFill').style.width = contextPct.toFixed(1) + '%';
+
+  // Daily usage (estimated)
+  const dailyMax = 500000;
+  const dailyUsed = totalTokens * 2.5; // rough estimate
+  const dailyPct = Math.min(100, (dailyUsed / dailyMax) * 100);
+  document.getElementById('tokenDailyValue').textContent = fmtTokens(Math.round(dailyUsed)) + ' / ' + fmtTokens(dailyMax);
+  document.getElementById('tokenDailyFill').style.width = dailyPct.toFixed(1) + '%';
+
+  // Stats
+  document.getElementById('tokenTotalValue').textContent = fmtNumber(totalTokens);
+  document.getElementById('tokenTotalSub').textContent = sessions.length + ' session' + (sessions.length !== 1 ? 's' : '');
+  document.getElementById('tokenAvgValue').textContent = fmtNumber(avgTokens);
+}
+
+// -- Activity Feed --
+function renderFeed() {
+  const events = getFeedData();
+  const filter = state.feedFilter;
+  const filtered = filter === 'all' ? events : events.filter(e => e.type === filter);
+
+  document.getElementById('feedCount').textContent = filtered.length + ' events';
+  const list = document.getElementById('feedList');
+
+  list.innerHTML = filtered.slice(0, 30).map((e, i) => {
+    const type = e.type || 'system';
+    const colors = FEED_COLORS[type] || FEED_COLORS.system;
+    const icon = FEED_ICONS[type] || FEED_ICONS.system;
+    const time = fmtTime(e.ts);
+
+    return `
+      <div class="feed-item" style="animation-delay:${Math.min(i * 30, 300)}ms;">
+        <span class="feed-time">${time}</span>
+        <span class="feed-badge ${colors.bg} ${colors.text}">${icon}</span>
+        <div class="feed-content">
+          <div class="feed-text">${esc(e.text)}</div>
+          ${e.detail ? '<div class="feed-detail">' + esc(e.detail) + '</div>' : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  // Rebind click for detail expand
   list.querySelectorAll('.feed-item').forEach(item => {
     item.addEventListener('click', () => {
-      const detailEl = item.querySelector('.feed-detail');
-      if (detailEl) detailEl.classList.toggle('open');
+      const d = item.querySelector('.feed-detail');
+      if (d) d.classList.toggle('open');
     });
   });
 }
-renderFeed('all');
+
+// -- Sparklines --
+function renderSparkline(containerId, data) {
+  const el = document.getElementById(containerId);
+  if (!el || !data || !data.length) return;
+  const max = Math.max(...data.map(d => d.v));
+  el.innerHTML = data.map(d => {
+    const h = Math.max(3, (d.v / max) * 20);
+    const color = d.ok ? 'var(--accent-green)' : 'var(--accent-red)';
+    return '<div class="cron-spark-bar" style="height:' + h + 'px;background:' + color + ';"></div>';
+  }).join('');
+}
+
+
+// ══════════════════════════════════════════════════
+// DATA ACCESSORS (real data or mock fallback)
+// ══════════════════════════════════════════════════
+function getSessionsData() {
+  if (state.mode === 'live' && state.sessions?.sessions) return state.sessions.sessions;
+  if (state.mode === 'live' && state.sessions && Array.isArray(state.sessions)) return state.sessions;
+  return state.mode === 'demo' ? MOCK.sessions : [];
+}
+
+function getNodesData() {
+  if (state.mode === 'live' && state.nodes) return state.nodes;
+  return state.mode === 'demo' ? MOCK.nodes : [];
+}
+
+function getCronData() {
+  if (state.mode === 'live' && state.cronJobs?.jobs) return state.cronJobs.jobs;
+  return state.mode === 'demo' ? MOCK.cronJobs : [];
+}
+
+function getChannelsData() {
+  // Channels from presence entries if available, otherwise mock
+  if (state.mode === 'live' && state.presence && Array.isArray(state.presence)) {
+    // Try to extract channel info from presence
+    const channels = [];
+    const seen = new Set();
+    for (const p of state.presence) {
+      const name = p.channelType || p.channel || p.clientName || p.name;
+      if (name && !seen.has(name)) {
+        seen.add(name);
+        channels.push({
+          name: name,
+          connected: p.status !== 'disconnected',
+          chats: p.chatCount || p.chats || 0,
+        });
+      }
+    }
+    if (channels.length > 0) return channels;
+  }
+  return state.mode === 'demo' ? MOCK.channels : MOCK.channels; // fallback to mock channels either way
+}
+
+function getFeedData() {
+  return state.feedEvents.length > 0 ? state.feedEvents :
+         state.mode === 'demo' ? MOCK.feedEvents : [];
+}
+
+
+// ══════════════════════════════════════════════════
+// UI INTERACTIONS
+// ══════════════════════════════════════════════════
+
+// Connection panel toggle
+document.getElementById('connectionBar').addEventListener('click', () => {
+  document.getElementById('connectionSettings').classList.toggle('open');
+});
+
+// Prevent settings panel clicks from toggling
+document.getElementById('connectionSettings').addEventListener('click', (e) => {
+  e.stopPropagation();
+});
+
+// Connect button
+document.getElementById('connectBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  doConnect();
+});
+
+// Disconnect button
+document.getElementById('disconnectBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  doDisconnect();
+});
+
+// Demo button
+document.getElementById('demoBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  enterDemoMode();
+});
+
+// Expand/collapse panels via event delegation
+document.getElementById('sessionsList').addEventListener('click', (e) => {
+  const item = e.target.closest('.session-item');
+  if (!item) return;
+  const key = item.dataset.session;
+  const detail = document.getElementById('detail-' + key);
+  if (detail) detail.classList.toggle('open');
+});
+
+document.getElementById('nodesList').addEventListener('click', (e) => {
+  const item = e.target.closest('.node-item');
+  if (!item) return;
+  const key = item.dataset.node;
+  const detail = document.getElementById('detail-' + key);
+  if (detail) detail.classList.toggle('open');
+});
+
+document.getElementById('cronGrid').addEventListener('click', (e) => {
+  const item = e.target.closest('.cron-item');
+  if (!item) return;
+  const key = item.dataset.cron;
+  const detail = document.getElementById('detail-' + key);
+  if (detail) detail.classList.toggle('open');
+});
 
 // Feed filters
 document.querySelectorAll('.feed-filter').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.feed-filter').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    renderFeed(btn.dataset.filter);
+    state.feedFilter = btn.dataset.filter;
+    renderFeed();
   });
 });
 
-// ── Sparklines ──
-function renderSparkline(containerId, data) {
-  const el = document.getElementById(containerId);
-  if (!el) return;
-  const max = Math.max(...data.map(d => d.v));
-  el.innerHTML = data.map(d => {
-    const h = Math.max(3, (d.v / max) * 20);
-    const color = d.ok ? 'var(--accent-green)' : 'var(--accent-red)';
-    return `<div class="cron-spark-bar" style="height:${h}px;background:${color};"></div>`;
-  }).join('');
-}
-
-renderSparkline('spark-pr', [
-  {v:8,ok:1},{v:7,ok:1},{v:9,ok:1},{v:8,ok:1},{v:12,ok:0},{v:7,ok:1},{v:8,ok:1},{v:9,ok:1}
-]);
-renderSparkline('spark-digest', [
-  {v:12,ok:1},{v:11,ok:1},{v:13,ok:1},{v:12,ok:1},{v:14,ok:1},{v:11,ok:1},{v:12,ok:1}
-]);
-renderSparkline('spark-health', [
-  {v:1,ok:1},{v:1,ok:1},{v:2,ok:1},{v:1,ok:1},{v:1,ok:1},{v:3,ok:0},{v:1,ok:1},{v:1,ok:1},{v:1,ok:1},{v:1,ok:1}
-]);
-
-// ── Cron countdown (simulated) ──
-let cron1Sec = 272; // 4m 32s
-let cron3Sec = 72;  // 1m 12s
-
-function fmtCountdown(sec) {
-  if (sec <= 0) return 'running...';
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return `${m}m ${String(s).padStart(2, '0')}s`;
-}
-
-setInterval(() => {
-  cron1Sec = cron1Sec > 0 ? cron1Sec - 1 : 900;
-  cron3Sec = cron3Sec > 0 ? cron3Sec - 1 : 300;
-  const el1 = document.getElementById('cron-next-1');
-  const el3 = document.getElementById('cron-next-3');
-  if (el1) el1.textContent = fmtCountdown(cron1Sec);
-  if (el3) el3.textContent = fmtCountdown(cron3Sec);
-}, 1000);
-
-// ── Keyboard navigation ──
+// Keyboard: Escape to close all panels
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    document.querySelectorAll('.session-detail.open, .node-detail.open, .cron-detail.open, .feed-detail.open')
+    document.querySelectorAll('.session-detail.open, .node-detail.open, .cron-detail.open, .feed-detail.open, .connection-settings.open')
       .forEach(el => el.classList.remove('open'));
   }
 });
 
-// ── Simulate new feed item appearing ──
-let simCounter = 0;
-const simEvents = [
-  { time: '', type: 'system',  icon: '&#x1F4C8;', text: 'memory: auto-compacted context (saved 1,200 tokens)', detail: 'Removed 3 stale memories from working set' },
-  { time: '', type: 'message', icon: '&#x1F4E9;', text: 'telegram: message from <strong>Boss</strong>',        detail: '"Looks great, ship it when ready"' },
-  { time: '', type: 'tool',    icon: '&#x1F6E0;', text: 'exec: <code>npm run build</code>',                     detail: 'Build completed successfully in 3.2s' },
+// Pulse orb click - when in demo mode, cycle states
+let demoCycleIdx = 0;
+const DEMO_STATES = [
+  { cls: '', text: 'Idle', textCls: 'idle-text' },
+  { cls: 'thinking', text: 'Thinking', textCls: 'thinking-text' },
+  { cls: 'streaming', text: 'Responding', textCls: 'streaming-text' },
 ];
+document.getElementById('pulseOrb').addEventListener('click', () => {
+  if (state.mode === 'demo') {
+    demoCycleIdx = (demoCycleIdx + 1) % DEMO_STATES.length;
+    const s = DEMO_STATES[demoCycleIdx];
+    document.getElementById('pulseOrb').className = 'pulse-orb ' + s.cls;
+    document.getElementById('pulseStatusText').className = 'pulse-status-value ' + s.textCls;
+    document.getElementById('pulseStatusText').textContent = s.text;
+  }
+});
 
+
+// ══════════════════════════════════════════════════
+// TIMERS
+// ══════════════════════════════════════════════════
+
+// Clock
+function updateClock() {
+  document.getElementById('clock').textContent = fmtTimeWithSec();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// Cron countdowns
 setInterval(() => {
-  if (simCounter >= simEvents.length) return;
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2, '0');
-  const m = String(now.getMinutes()).padStart(2, '0');
-  const evt = { ...simEvents[simCounter], time: `${h}:${m}` };
-  feedData.unshift(evt);
-  // Re-render if "all" filter is active
-  const activeFilter = document.querySelector('.feed-filter.active');
-  if (activeFilter) renderFeed(activeFilter.dataset.filter);
-  simCounter++;
+  document.querySelectorAll('.cron-next[data-next-at]').forEach(el => {
+    const at = Number(el.dataset.nextAt);
+    if (!at) return;
+    const remaining = at - Date.now();
+    el.textContent = remaining > 0 ? fmtCountdown(remaining) : 'running...';
+  });
+}, 1000);
+
+// Stat card cron countdown (top row)
+setInterval(() => {
+  const cron = getCronData();
+  if (cron.length === 0) return;
+  const nextJob = cron.filter(j => j.nextRunAtMs).sort((a, b) => a.nextRunAtMs - b.nextRunAtMs)[0];
+  if (nextJob) {
+    const remaining = nextJob.nextRunAtMs - Date.now();
+    document.getElementById('statCronSub').textContent = 'next in ' + fmtCountdown(remaining);
+  }
+}, 5000);
+
+// Periodic data refresh when connected
+setInterval(() => {
+  if (state.mode === 'live' && state.connection === 'connected') {
+    loadAllData().catch(() => {});
+  }
+}, 30000);
+
+// Demo mode: simulate new events
+let demoSimCounter = 0;
+const DEMO_SIM_EVENTS = [
+  { type: 'system',  text: 'memory: auto-compacted context (saved 1,200 tokens)', detail: 'Removed 3 stale memories from working set' },
+  { type: 'message', text: 'telegram: message from Boss', detail: '"Looks great, ship it when ready"' },
+  { type: 'tool',    text: 'exec: npm run build', detail: 'Build completed successfully in 3.2s' },
+];
+setInterval(() => {
+  if (state.mode !== 'demo' || demoSimCounter >= DEMO_SIM_EVENTS.length) return;
+  const evt = { ...DEMO_SIM_EVENTS[demoSimCounter], ts: Date.now() };
+  state.feedEvents.unshift(evt);
+  renderFeed();
+  demoSimCounter++;
 }, 12000);
+
+
+// ══════════════════════════════════════════════════
+// INITIALIZATION
+// ══════════════════════════════════════════════════
+(function init() {
+  // Populate settings fields
+  document.getElementById('gatewayUrlInput').value = settings.gatewayUrl || '';
+  document.getElementById('authTokenInput').value = settings.authToken || '';
+
+  // If auto-connect is saved and we have a URL, connect automatically
+  if (settings.autoConnect && settings.gatewayUrl) {
+    doConnect();
+  } else {
+    // Start in demo mode
+    state.feedEvents = [...MOCK.feedEvents];
+    renderAll();
+  }
+})();
 </script>
 
 </body>
